@@ -6,7 +6,7 @@ WORKDIR /app
 
 # Install dependencies first so this layer is cached until the lockfile changes.
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm install
 
 COPY . .
 
