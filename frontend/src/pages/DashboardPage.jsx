@@ -3,15 +3,7 @@ import {
   Calendar,
   RotateCcw,
   TrendingUp,
-  TrendingDown,
   ArrowUpRight,
-  Clock,
-  CheckCircle2,
-  AlertCircle,
-  RefreshCw,
-  Users,
-  CreditCard,
-  ChevronDown,
   Download,
 } from 'lucide-react';
 import {
@@ -195,11 +187,11 @@ export default function DashboardPage() {
         <div>
           <h1
             style={{
-              fontSize: 'var(--font-size-heading)',
+              fontSize: 'var(--font-size-heading-main)',
               fontWeight: 'var(--font-weight-semibold)',
               color: 'var(--color-secondary)',
               letterSpacing: '-0.02em',
-              marginBottom: '2px',
+              marginBottom: '4px',
             }}
           >
             Overview
@@ -215,21 +207,21 @@ export default function DashboardPage() {
         </div>
 
         {/* Filter Controls */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
           <div
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '6px',
+              gap: '8px',
               backgroundColor: 'var(--color-surface)',
               border: '1px solid var(--color-border)',
               borderRadius: 'var(--radius-sm)',
-              padding: '6px 12px',
-              fontSize: '13px',
+              padding: '8px 14px',
+              fontSize: 'var(--font-size-body)',
               color: 'var(--color-text-main)',
             }}
           >
-            <Calendar size={14} style={{ color: 'var(--color-text-secondary)' }} />
+            <Calendar size={16} style={{ color: 'var(--color-text-secondary)' }} />
             <select
               value={dateRange}
               onChange={(e) => setDateRange(e.target.value)}
@@ -237,7 +229,7 @@ export default function DashboardPage() {
                 border: 'none',
                 background: 'transparent',
                 outline: 'none',
-                fontSize: '13px',
+                fontSize: 'var(--font-size-body)',
                 fontWeight: 'var(--font-weight-medium)',
                 color: 'var(--color-text-main)',
                 cursor: 'pointer',
@@ -256,7 +248,7 @@ export default function DashboardPage() {
             className="btn btn-secondary"
             title="Reset filters to default"
           >
-            <RotateCcw size={13} style={{ color: 'var(--color-text-secondary)' }} />
+            <RotateCcw size={15} style={{ color: 'var(--color-text-secondary)' }} />
             <span>Reset</span>
           </button>
         </div>
@@ -266,11 +258,11 @@ export default function DashboardPage() {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))',
           gap: 'var(--space-4)',
         }}
       >
-        {/* Panel 1: Total Revenue (Emerald-green background inspired by reference balance card) */}
+        {/* Panel 1: Total Revenue */}
         <div
           style={{
             backgroundColor: 'var(--color-primary)',
@@ -286,9 +278,9 @@ export default function DashboardPage() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <span
               style={{
-                fontSize: '12px',
+                fontSize: 'var(--font-size-metric-label)',
                 fontWeight: 'var(--font-weight-medium)',
-                color: 'rgba(255, 255, 255, 0.85)',
+                color: 'rgba(255, 255, 255, 0.9)',
                 textTransform: 'uppercase',
                 letterSpacing: '0.04em',
               }}
@@ -299,15 +291,15 @@ export default function DashboardPage() {
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '3px',
-                fontSize: '11px',
+                gap: '4px',
+                fontSize: 'var(--font-size-badge)',
                 fontWeight: 'var(--font-weight-semibold)',
-                backgroundColor: 'rgba(255, 255, 255, 0.18)',
-                padding: '2px 6px',
+                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                padding: '3px 8px',
                 borderRadius: 'var(--radius-xs)',
               }}
             >
-              <TrendingUp size={12} />
+              <TrendingUp size={13} />
               +14.2%
             </span>
           </div>
@@ -315,19 +307,19 @@ export default function DashboardPage() {
           <div style={{ marginTop: 'var(--space-4)' }}>
             <div
               style={{
-                fontSize: '26px',
+                fontSize: 'var(--font-size-metric-value)',
                 fontWeight: 'var(--font-weight-bold)',
                 letterSpacing: '-0.02em',
-                lineHeight: 1.1,
+                lineHeight: 1.15,
               }}
             >
               ₹1,24,580
             </div>
             <div
               style={{
-                fontSize: '11px',
-                color: 'rgba(255, 255, 255, 0.75)',
-                marginTop: '4px',
+                fontSize: 'var(--font-size-helper)',
+                color: 'rgba(255, 255, 255, 0.8)',
+                marginTop: '6px',
               }}
             >
               vs. ₹1,09,120 last cycle
@@ -335,7 +327,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Panel 2: Active Subscriptions (Clean White) */}
+        {/* Panel 2: Active Subscriptions */}
         <div
           className="card-surface"
           style={{
@@ -348,7 +340,7 @@ export default function DashboardPage() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <span
               style={{
-                fontSize: '12px',
+                fontSize: 'var(--font-size-metric-label)',
                 fontWeight: 'var(--font-weight-medium)',
                 color: 'var(--color-text-secondary)',
                 textTransform: 'uppercase',
@@ -361,12 +353,12 @@ export default function DashboardPage() {
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '3px',
-                fontSize: '11px',
+                gap: '4px',
+                fontSize: 'var(--font-size-badge)',
                 fontWeight: 'var(--font-weight-semibold)',
                 color: 'var(--color-primary)',
                 backgroundColor: 'var(--color-surface-green)',
-                padding: '2px 6px',
+                padding: '3px 8px',
                 borderRadius: 'var(--radius-xs)',
               }}
             >
@@ -377,20 +369,20 @@ export default function DashboardPage() {
           <div style={{ marginTop: 'var(--space-4)' }}>
             <div
               style={{
-                fontSize: '26px',
+                fontSize: 'var(--font-size-metric-value)',
                 fontWeight: 'var(--font-weight-bold)',
                 color: 'var(--color-secondary)',
                 letterSpacing: '-0.02em',
-                lineHeight: 1.1,
+                lineHeight: 1.15,
               }}
             >
               248
             </div>
             <div
               style={{
-                fontSize: '11px',
+                fontSize: 'var(--font-size-helper)',
                 color: 'var(--color-text-secondary)',
-                marginTop: '4px',
+                marginTop: '6px',
               }}
             >
               Across 4 billing tiers
@@ -398,7 +390,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Panel 3: Outstanding Amount (Clean White) */}
+        {/* Panel 3: Outstanding Amount */}
         <div
           className="card-surface"
           style={{
@@ -411,7 +403,7 @@ export default function DashboardPage() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <span
               style={{
-                fontSize: '12px',
+                fontSize: 'var(--font-size-metric-label)',
                 fontWeight: 'var(--font-weight-medium)',
                 color: 'var(--color-text-secondary)',
                 textTransform: 'uppercase',
@@ -422,11 +414,11 @@ export default function DashboardPage() {
             </span>
             <span
               style={{
-                fontSize: '11px',
+                fontSize: 'var(--font-size-badge)',
                 fontWeight: 'var(--font-weight-medium)',
                 color: 'var(--color-text-secondary)',
                 backgroundColor: '#F1F3F2',
-                padding: '2px 6px',
+                padding: '3px 8px',
                 borderRadius: 'var(--radius-xs)',
               }}
             >
@@ -437,20 +429,20 @@ export default function DashboardPage() {
           <div style={{ marginTop: 'var(--space-4)' }}>
             <div
               style={{
-                fontSize: '26px',
+                fontSize: 'var(--font-size-metric-value)',
                 fontWeight: 'var(--font-weight-bold)',
                 color: 'var(--color-secondary)',
                 letterSpacing: '-0.02em',
-                lineHeight: 1.1,
+                lineHeight: 1.15,
               }}
             >
               ₹12,430
             </div>
             <div
               style={{
-                fontSize: '11px',
+                fontSize: 'var(--font-size-helper)',
                 color: 'var(--color-text-secondary)',
-                marginTop: '4px',
+                marginTop: '6px',
               }}
             >
               Due within next 10 business days
@@ -458,7 +450,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Panel 4: Overdue Invoices (Clean White) */}
+        {/* Panel 4: Overdue Invoices */}
         <div
           className="card-surface"
           style={{
@@ -471,7 +463,7 @@ export default function DashboardPage() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <span
               style={{
-                fontSize: '12px',
+                fontSize: 'var(--font-size-metric-label)',
                 fontWeight: 'var(--font-weight-medium)',
                 color: 'var(--color-text-secondary)',
                 textTransform: 'uppercase',
@@ -482,11 +474,11 @@ export default function DashboardPage() {
             </span>
             <span
               style={{
-                fontSize: '11px',
+                fontSize: 'var(--font-size-badge)',
                 fontWeight: 'var(--font-weight-medium)',
                 color: 'var(--status-overdue-text)',
                 backgroundColor: 'var(--status-overdue-bg)',
-                padding: '2px 6px',
+                padding: '3px 8px',
                 borderRadius: 'var(--radius-xs)',
               }}
             >
@@ -497,20 +489,20 @@ export default function DashboardPage() {
           <div style={{ marginTop: 'var(--space-4)' }}>
             <div
               style={{
-                fontSize: '26px',
+                fontSize: 'var(--font-size-metric-value)',
                 fontWeight: 'var(--font-weight-bold)',
                 color: 'var(--color-secondary)',
                 letterSpacing: '-0.02em',
-                lineHeight: 1.1,
+                lineHeight: 1.15,
               }}
             >
               32
             </div>
             <div
               style={{
-                fontSize: '11px',
+                fontSize: 'var(--font-size-helper)',
                 color: 'var(--color-text-secondary)',
-                marginTop: '4px',
+                marginTop: '6px',
               }}
             >
               Automated reminders dispatched
@@ -523,14 +515,14 @@ export default function DashboardPage() {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))',
           gap: 'var(--space-6)',
         }}
       >
         {/* LEFT SECTION */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
           {/* Subscription Overview Card */}
-          <div className="card-surface" style={{ padding: 'var(--space-5)' }}>
+          <div className="card-surface" style={{ padding: 'var(--space-6)' }}>
             <div
               style={{
                 display: 'flex',
@@ -542,24 +534,25 @@ export default function DashboardPage() {
               <div>
                 <h2
                   style={{
-                    fontSize: 'var(--font-size-section)',
+                    fontSize: 'var(--font-size-heading-card)',
                     fontWeight: 'var(--font-weight-semibold)',
                     color: 'var(--color-secondary)',
+                    letterSpacing: '-0.01em',
                   }}
                 >
                   Subscription Health
                 </h2>
-                <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>
+                <span style={{ fontSize: 'var(--font-size-helper)', color: 'var(--color-text-secondary)' }}>
                   Monthly Recurring Revenue (MRR) & retention
                 </span>
               </div>
               <span
                 style={{
-                  fontSize: '11px',
+                  fontSize: 'var(--font-size-badge)',
                   fontWeight: 'var(--font-weight-semibold)',
                   color: 'var(--color-primary)',
                   backgroundColor: 'var(--color-surface-green)',
-                  padding: '3px 8px',
+                  padding: '3px 9px',
                   borderRadius: 'var(--radius-xs)',
                 }}
               >
@@ -573,27 +566,27 @@ export default function DashboardPage() {
                 display: 'grid',
                 gridTemplateColumns: '1fr 1fr 1fr',
                 gap: 'var(--space-3)',
-                padding: 'var(--space-3)',
+                padding: 'var(--space-4)',
                 backgroundColor: 'var(--color-background)',
                 borderRadius: 'var(--radius-sm)',
                 marginBottom: 'var(--space-4)',
               }}
             >
               <div>
-                <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>MRR</div>
-                <div style={{ fontSize: '15px', fontWeight: 'var(--font-weight-bold)', color: 'var(--color-secondary)' }}>
+                <div style={{ fontSize: 'var(--font-size-helper)', color: 'var(--color-text-secondary)', marginBottom: '2px' }}>MRR</div>
+                <div style={{ fontSize: '18px', fontWeight: 'var(--font-weight-bold)', color: 'var(--color-secondary)' }}>
                   ₹94,200
                 </div>
               </div>
               <div>
-                <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Avg ARPU</div>
-                <div style={{ fontSize: '15px', fontWeight: 'var(--font-weight-bold)', color: 'var(--color-secondary)' }}>
+                <div style={{ fontSize: 'var(--font-size-helper)', color: 'var(--color-text-secondary)', marginBottom: '2px' }}>Avg ARPU</div>
+                <div style={{ fontSize: '18px', fontWeight: 'var(--font-weight-bold)', color: 'var(--color-secondary)' }}>
                   ₹502
                 </div>
               </div>
               <div>
-                <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Churn Rate</div>
-                <div style={{ fontSize: '15px', fontWeight: 'var(--font-weight-bold)', color: 'var(--color-primary)' }}>
+                <div style={{ fontSize: 'var(--font-size-helper)', color: 'var(--color-text-secondary)', marginBottom: '2px' }}>Churn Rate</div>
+                <div style={{ fontSize: '18px', fontWeight: 'var(--font-weight-bold)', color: 'var(--color-primary)' }}>
                   1.8%
                 </div>
               </div>
@@ -605,8 +598,8 @@ export default function DashboardPage() {
                 style={{
                   display: 'flex',
                   justifyContent: 'space-between',
-                  fontSize: '12px',
-                  marginBottom: '6px',
+                  fontSize: 'var(--font-size-helper)',
+                  marginBottom: '8px',
                 }}
               >
                 <span style={{ color: 'var(--color-text-secondary)' }}>Distribution</span>
@@ -616,9 +609,9 @@ export default function DashboardPage() {
               </div>
               <div
                 style={{
-                  height: '8px',
+                  height: '10px',
                   display: 'flex',
-                  borderRadius: '4px',
+                  borderRadius: '5px',
                   overflow: 'hidden',
                   backgroundColor: '#E7EAE8',
                 }}
@@ -631,7 +624,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Upcoming Renewals Card */}
-          <div className="card-surface" style={{ padding: 'var(--space-5)' }}>
+          <div className="card-surface" style={{ padding: 'var(--space-6)' }}>
             <div
               style={{
                 display: 'flex',
@@ -642,14 +635,14 @@ export default function DashboardPage() {
             >
               <h2
                 style={{
-                  fontSize: 'var(--font-size-section)',
+                  fontSize: 'var(--font-size-heading-card)',
                   fontWeight: 'var(--font-weight-semibold)',
                   color: 'var(--color-secondary)',
                 }}
               >
                 Upcoming Renewals (7 Days)
               </h2>
-              <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>
+              <span style={{ fontSize: 'var(--font-size-helper)', color: 'var(--color-text-secondary)' }}>
                 3 pending
               </span>
             </div>
@@ -662,23 +655,23 @@ export default function DashboardPage() {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    padding: '10px 12px',
+                    padding: '12px 14px',
                     border: '1px solid var(--color-border)',
                     borderRadius: 'var(--radius-sm)',
                     backgroundColor: '#FAFCFB',
                   }}
                 >
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
                     <span
                       style={{
-                        fontSize: '13px',
+                        fontSize: 'var(--font-size-body)',
                         fontWeight: 'var(--font-weight-semibold)',
                         color: 'var(--color-text-main)',
                       }}
                     >
                       {item.customer}
                     </span>
-                    <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>
+                    <span style={{ fontSize: 'var(--font-size-helper)', color: 'var(--color-text-secondary)' }}>
                       {item.plan} • Due {item.renewalDate}
                     </span>
                   </div>
@@ -686,7 +679,7 @@ export default function DashboardPage() {
                   <div style={{ textAlign: 'right' }}>
                     <div
                       style={{
-                        fontSize: '13px',
+                        fontSize: 'var(--font-size-body)',
                         fontWeight: 'var(--font-weight-semibold)',
                         color: 'var(--color-secondary)',
                       }}
@@ -695,7 +688,7 @@ export default function DashboardPage() {
                     </div>
                     <span
                       style={{
-                        fontSize: '10px',
+                        fontSize: 'var(--font-size-badge)',
                         color: item.autoRenew ? 'var(--color-primary)' : 'var(--color-text-secondary)',
                         fontWeight: 'var(--font-weight-medium)',
                       }}
@@ -709,13 +702,13 @@ export default function DashboardPage() {
           </div>
 
           {/* Recent Customer Activity */}
-          <div className="card-surface" style={{ padding: 'var(--space-5)' }}>
+          <div className="card-surface" style={{ padding: 'var(--space-6)' }}>
             <h2
               style={{
-                fontSize: 'var(--font-size-section)',
+                fontSize: 'var(--font-size-heading-card)',
                 fontWeight: 'var(--font-weight-semibold)',
                 color: 'var(--color-secondary)',
-                marginBottom: 'var(--space-3)',
+                marginBottom: 'var(--space-4)',
               }}
             >
               Recent Customer Activity
@@ -728,25 +721,25 @@ export default function DashboardPage() {
                   style={{
                     display: 'flex',
                     alignItems: 'flex-start',
-                    gap: '10px',
-                    fontSize: '13px',
+                    gap: '12px',
+                    fontSize: 'var(--font-size-body)',
                   }}
                 >
                   <div
                     style={{
-                      width: '6px',
-                      height: '6px',
+                      width: '7px',
+                      height: '7px',
                       borderRadius: '50%',
                       backgroundColor: 'var(--color-primary)',
-                      marginTop: '6px',
+                      marginTop: '7px',
                       flexShrink: 0,
                     }}
                   />
                   <div style={{ flex: 1 }}>
-                    <div style={{ color: 'var(--color-text-main)', fontWeight: 'var(--font-weight-medium)' }}>
+                    <div style={{ color: 'var(--color-text-main)', fontWeight: 'var(--font-weight-medium)', fontSize: 'var(--font-size-body)' }}>
                       {evt.title}
                     </div>
-                    <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>
+                    <div style={{ fontSize: 'var(--font-size-helper)', color: 'var(--color-text-secondary)', marginTop: '2px' }}>
                       {evt.time}
                     </div>
                   </div>
@@ -759,7 +752,7 @@ export default function DashboardPage() {
         {/* RIGHT SECTION */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
           {/* Monthly Revenue Bar Chart */}
-          <div className="card-surface" style={{ padding: 'var(--space-5)' }}>
+          <div className="card-surface" style={{ padding: 'var(--space-6)' }}>
             <div
               style={{
                 display: 'flex',
@@ -773,14 +766,14 @@ export default function DashboardPage() {
               <div>
                 <h2
                   style={{
-                    fontSize: 'var(--font-size-section)',
+                    fontSize: 'var(--font-size-heading-card)',
                     fontWeight: 'var(--font-weight-semibold)',
                     color: 'var(--color-secondary)',
                   }}
                 >
                   Revenue Overview
                 </h2>
-                <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>
+                <span style={{ fontSize: 'var(--font-size-helper)', color: 'var(--color-text-secondary)' }}>
                   Revenue vs Payments Received comparison
                 </span>
               </div>
@@ -791,7 +784,7 @@ export default function DashboardPage() {
                   display: 'flex',
                   alignItems: 'center',
                   backgroundColor: '#F3F5F4',
-                  padding: '2px',
+                  padding: '3px',
                   borderRadius: 'var(--radius-sm)',
                   border: '1px solid var(--color-border)',
                 }}
@@ -806,8 +799,8 @@ export default function DashboardPage() {
                     type="button"
                     onClick={() => setChartFilter(tab.key)}
                     style={{
-                      padding: '4px 10px',
-                      fontSize: '11px',
+                      padding: '5px 12px',
+                      fontSize: 'var(--font-size-helper)',
                       fontWeight:
                         chartFilter === tab.key
                           ? 'var(--font-weight-semibold)'
@@ -836,15 +829,15 @@ export default function DashboardPage() {
                 alignItems: 'center',
                 gap: 'var(--space-4)',
                 marginBottom: 'var(--space-3)',
-                fontSize: '11px',
+                fontSize: 'var(--font-size-helper)',
                 color: 'var(--color-text-secondary)',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
                 <span
                   style={{
-                    width: '10px',
-                    height: '10px',
+                    width: '11px',
+                    height: '11px',
                     borderRadius: '2px',
                     backgroundColor: '#087A4B',
                     display: 'inline-block',
@@ -854,11 +847,11 @@ export default function DashboardPage() {
                   Revenue
                 </span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
                 <span
                   style={{
-                    width: '10px',
-                    height: '10px',
+                    width: '11px',
+                    height: '11px',
                     borderRadius: '2px',
                     backgroundColor: '#52B788',
                     display: 'inline-block',
@@ -871,12 +864,12 @@ export default function DashboardPage() {
             </div>
 
             {/* Recharts Vertical BarChart Visualization */}
-            <div style={{ height: '240px', width: '100%', marginTop: 'var(--space-1)' }}>
+            <div style={{ height: '250px', width: '100%', marginTop: 'var(--space-2)' }}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={activeChartData}
-                  margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
-                  barGap={3}
+                  margin={{ top: 10, right: 10, left: -15, bottom: 0 }}
+                  barGap={4}
                   barCategoryGap={chartFilter === 'monthly' ? '18%' : '28%'}
                 >
                   <CartesianGrid
@@ -888,12 +881,12 @@ export default function DashboardPage() {
                     dataKey="label"
                     tickLine={false}
                     axisLine={{ stroke: '#E7EAE8' }}
-                    tick={{ fill: '#858B87', fontSize: 11 }}
+                    tick={{ fill: '#858B87', fontSize: 12 }}
                   />
                   <YAxis
                     tickLine={false}
                     axisLine={false}
-                    tick={{ fill: '#858B87', fontSize: 11 }}
+                    tick={{ fill: '#858B87', fontSize: 12 }}
                     tickFormatter={(val) =>
                       val >= 100000 ? `₹${(val / 100000).toFixed(1)}L` : `₹${val / 1000}k`
                     }
@@ -904,9 +897,9 @@ export default function DashboardPage() {
                       backgroundColor: '#FFFFFF',
                       border: '1px solid #E7EAE8',
                       borderRadius: '6px',
-                      fontSize: '12px',
+                      fontSize: '13px',
                       boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-                      padding: '8px 12px',
+                      padding: '10px 14px',
                     }}
                     formatter={(value, name) => [
                       `₹${value.toLocaleString()}`,
@@ -925,14 +918,14 @@ export default function DashboardPage() {
                     name="revenue"
                     fill="#087A4B"
                     radius={[3, 3, 0, 0]}
-                    maxBarSize={14}
+                    maxBarSize={16}
                   />
                   <Bar
                     dataKey="payments"
                     name="payments"
                     fill="#52B788"
                     radius={[3, 3, 0, 0]}
-                    maxBarSize={14}
+                    maxBarSize={16}
                   />
                 </BarChart>
               </ResponsiveContainer>
@@ -940,7 +933,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Payment Collection Summary */}
-          <div className="card-surface" style={{ padding: 'var(--space-5)' }}>
+          <div className="card-surface" style={{ padding: 'var(--space-6)' }}>
             <div
               style={{
                 display: 'flex',
@@ -952,14 +945,14 @@ export default function DashboardPage() {
               <div>
                 <h2
                   style={{
-                    fontSize: 'var(--font-size-section)',
+                    fontSize: 'var(--font-size-heading-card)',
                     fontWeight: 'var(--font-weight-semibold)',
                     color: 'var(--color-secondary)',
                   }}
                 >
                   Payment Collections
                 </h2>
-                <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>
+                <span style={{ fontSize: 'var(--font-size-helper)', color: 'var(--color-text-secondary)' }}>
                   Settlement & collection pipeline
                 </span>
               </div>
@@ -973,8 +966,8 @@ export default function DashboardPage() {
                   style={{
                     display: 'flex',
                     justifyContent: 'space-between',
-                    fontSize: '12px',
-                    marginBottom: '6px',
+                    fontSize: 'var(--font-size-helper)',
+                    marginBottom: '8px',
                   }}
                 >
                   <span style={{ color: 'var(--color-text-secondary)' }}>
@@ -986,9 +979,9 @@ export default function DashboardPage() {
                 </div>
                 <div
                   style={{
-                    height: '8px',
+                    height: '10px',
                     display: 'flex',
-                    borderRadius: '4px',
+                    borderRadius: '5px',
                     overflow: 'hidden',
                     backgroundColor: '#E7EAE8',
                   }}
@@ -1004,30 +997,30 @@ export default function DashboardPage() {
                   display: 'grid',
                   gridTemplateColumns: 'repeat(3, 1fr)',
                   gap: 'var(--space-3)',
-                  paddingTop: 'var(--space-3)',
+                  paddingTop: 'var(--space-4)',
                   borderTop: '1px solid var(--color-border)',
                 }}
               >
                 <div>
-                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>UPI AutoPay</div>
-                  <div style={{ fontSize: '14px', fontWeight: 'var(--font-weight-semibold)', color: 'var(--color-text-main)' }}>
+                  <div style={{ fontSize: 'var(--font-size-helper)', color: 'var(--color-text-secondary)' }}>UPI AutoPay</div>
+                  <div style={{ fontSize: '16px', fontWeight: 'var(--font-weight-semibold)', color: 'var(--color-text-main)', marginTop: '2px' }}>
                     52%
                   </div>
-                  <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)' }}>₹64,780</div>
+                  <div style={{ fontSize: 'var(--font-size-badge)', color: 'var(--color-text-secondary)' }}>₹64,780</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Cards (Recurring)</div>
-                  <div style={{ fontSize: '14px', fontWeight: 'var(--font-weight-semibold)', color: 'var(--color-text-main)' }}>
+                  <div style={{ fontSize: 'var(--font-size-helper)', color: 'var(--color-text-secondary)' }}>Cards (Recurring)</div>
+                  <div style={{ fontSize: '16px', fontWeight: 'var(--font-weight-semibold)', color: 'var(--color-text-main)', marginTop: '2px' }}>
                     36%
                   </div>
-                  <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)' }}>₹44,850</div>
+                  <div style={{ fontSize: 'var(--font-size-badge)', color: 'var(--color-text-secondary)' }}>₹44,850</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Net Banking / NACH</div>
-                  <div style={{ fontSize: '14px', fontWeight: 'var(--font-weight-semibold)', color: 'var(--color-text-main)' }}>
+                  <div style={{ fontSize: 'var(--font-size-helper)', color: 'var(--color-text-secondary)' }}>Net Banking / NACH</div>
+                  <div style={{ fontSize: '16px', fontWeight: 'var(--font-weight-semibold)', color: 'var(--color-text-main)', marginTop: '2px' }}>
                     12%
                   </div>
-                  <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)' }}>₹14,950</div>
+                  <div style={{ fontSize: 'var(--font-size-badge)', color: 'var(--color-text-secondary)' }}>₹14,950</div>
                 </div>
               </div>
             </div>
@@ -1039,7 +1032,7 @@ export default function DashboardPage() {
       <div className="card-surface" style={{ overflow: 'hidden' }}>
         <div
           style={{
-            padding: 'var(--space-4) var(--space-5)',
+            padding: 'var(--space-4) var(--space-6)',
             borderBottom: '1px solid var(--color-border)',
             display: 'flex',
             alignItems: 'center',
@@ -1051,14 +1044,14 @@ export default function DashboardPage() {
           <div>
             <h2
               style={{
-                fontSize: 'var(--font-size-section)',
+                fontSize: 'var(--font-size-heading-card)',
                 fontWeight: 'var(--font-weight-semibold)',
                 color: 'var(--color-secondary)',
               }}
             >
               Recent Subscription Activities
             </h2>
-            <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>
+            <span style={{ fontSize: 'var(--font-size-helper)', color: 'var(--color-text-secondary)' }}>
               Real-time activity log of subscription orders, renewals, and invoice statuses.
             </span>
           </div>
@@ -1066,9 +1059,9 @@ export default function DashboardPage() {
           <button
             type="button"
             className="btn btn-secondary"
-            style={{ fontSize: '12px', padding: '6px 12px' }}
+            style={{ fontSize: 'var(--font-size-button)', padding: '7px 14px' }}
           >
-            <Download size={13} style={{ color: 'var(--color-text-secondary)' }} />
+            <Download size={15} style={{ color: 'var(--color-text-secondary)' }} />
             <span>Export CSV</span>
           </button>
         </div>
@@ -1093,14 +1086,14 @@ export default function DashboardPage() {
                   </td>
                   <td>
                     <div style={{ fontWeight: 'var(--font-weight-medium)' }}>{row.customer}</div>
-                    <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>
+                    <div style={{ fontSize: 'var(--font-size-helper)', color: 'var(--color-text-secondary)' }}>
                       {row.customerEmail}
                     </div>
                   </td>
-                  <td style={{ fontFamily: 'monospace', fontSize: '12px', color: 'var(--color-text-secondary)' }}>
+                  <td style={{ fontFamily: 'monospace', fontSize: 'var(--font-size-helper)', color: 'var(--color-text-secondary)' }}>
                     {row.reference}
                   </td>
-                  <td style={{ color: 'var(--color-text-secondary)', fontSize: '12px' }}>
+                  <td style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-helper)' }}>
                     {row.date}
                   </td>
                   <td style={{ fontWeight: 'var(--font-weight-semibold)', color: 'var(--color-secondary)' }}>

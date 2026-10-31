@@ -15,7 +15,7 @@ body {
   font-family: var(--font-family);
   background-color: var(--color-background);
   color: var(--color-text-main);
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -43,7 +43,8 @@ input,
 select,
 textarea {
   font-family: var(--font-family);
-  font-size: var(--font-size-body);
+  font-size: var(--font-size-input);
+  color: var(--color-text-main);
 }
 
 /* Base Layout Structure */
@@ -93,6 +94,7 @@ textarea {
   position: sticky;
   top: 0;
   z-index: 30;
+  font-size: var(--font-size-navbar);
 }
 
 /* Main Content Area */
@@ -118,12 +120,13 @@ textarea {
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
-  padding: 8px 14px;
-  font-size: var(--font-size-body);
+  padding: 9px 16px;
+  min-height: 40px;
+  font-size: var(--font-size-button);
   font-weight: var(--font-weight-medium);
   border-radius: var(--radius-sm);
   transition: all 0.15s ease;
-  line-height: 1;
+  line-height: 1.2;
 }
 
 @keyframes spin {
@@ -165,8 +168,8 @@ textarea {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   border-radius: var(--radius-sm);
   color: var(--color-text-secondary);
   border: 1px solid transparent;
@@ -185,7 +188,8 @@ textarea {
   background-color: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
-  padding: 6px 10px;
+  padding: 8px 12px;
+  min-height: 42px;
   gap: var(--space-2);
   color: var(--color-text-secondary);
   transition: border-color 0.15s ease;
@@ -200,7 +204,7 @@ textarea {
   outline: none;
   background: transparent;
   width: 100%;
-  font-size: var(--font-size-body);
+  font-size: var(--font-size-input);
   color: var(--color-text-main);
 }
 
@@ -212,12 +216,12 @@ textarea {
 .status-badge {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 3px 8px;
+  gap: 5px;
+  padding: 3px 9px;
   border-radius: var(--radius-xs);
-  font-size: var(--font-size-supporting);
+  font-size: var(--font-size-badge);
   font-weight: var(--font-weight-medium);
-  line-height: 1.2;
+  line-height: 1.25;
 }
 
 .status-badge.success {
@@ -250,10 +254,10 @@ textarea {
 }
 
 .fintech-table th {
-  padding: 10px 16px;
+  padding: 12px 18px;
   background-color: #FAFCFB;
   border-bottom: 1px solid var(--color-border);
-  font-size: var(--font-size-supporting);
+  font-size: var(--font-size-table-header);
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-secondary);
   text-transform: uppercase;
@@ -262,9 +266,9 @@ textarea {
 }
 
 .fintech-table td {
-  padding: 12px 16px;
+  padding: 14px 18px;
   border-bottom: 1px solid var(--color-border);
-  font-size: var(--font-size-body);
+  font-size: var(--font-size-table-content);
   color: var(--color-text-main);
   vertical-align: middle;
 }
@@ -281,10 +285,10 @@ textarea {
 .nav-link-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 7px 12px;
+  gap: 12px;
+  padding: 9px 14px;
   border-radius: var(--radius-sm);
-  font-size: var(--font-size-body);
+  font-size: var(--font-size-nav);
   font-weight: var(--font-weight-medium);
   color: var(--color-text-main);
   transition: all 0.15s ease;

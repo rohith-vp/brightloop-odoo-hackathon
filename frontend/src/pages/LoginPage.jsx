@@ -79,10 +79,10 @@ export default function LoginPage() {
       <div style={{ marginBottom: 'var(--space-6)', textAlign: 'left' }}>
         <h1
           style={{
-            fontSize: 'var(--font-size-heading)',
+            fontSize: 'var(--font-size-heading-main)',
             fontWeight: 'var(--font-weight-semibold)',
             color: 'var(--color-secondary)',
-            marginBottom: '4px',
+            marginBottom: '6px',
             letterSpacing: '-0.02em',
           }}
         >
@@ -99,7 +99,7 @@ export default function LoginPage() {
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
-            padding: '10px 12px',
+            padding: '12px 14px',
             borderRadius: 'var(--radius-sm)',
             backgroundColor: 'var(--status-success-bg)',
             color: 'var(--status-success-text)',
@@ -107,20 +107,20 @@ export default function LoginPage() {
             marginBottom: 'var(--space-4)',
           }}
         >
-          <CheckCircle2 size={16} />
+          <CheckCircle2 size={18} />
           <span>Signed in successfully. Redirecting to dashboard...</span>
         </div>
       )}
 
       {/* Form */}
-      <form onSubmit={handleSubmit} noValidate style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+      <form onSubmit={handleSubmit} noValidate style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
         {/* Email Field */}
         <div>
           <label
             htmlFor="email"
             style={{
               display: 'block',
-              fontSize: '13px',
+              fontSize: 'var(--font-size-form-label)',
               fontWeight: 'var(--font-weight-medium)',
               color: 'var(--color-text-main)',
               marginBottom: '6px',
@@ -139,8 +139,9 @@ export default function LoginPage() {
             disabled={isLoading || loginSuccess}
             style={{
               width: '100%',
-              padding: '9px 12px',
-              fontSize: 'var(--font-size-body)',
+              height: '46px',
+              padding: '10px 14px',
+              fontSize: 'var(--font-size-input)',
               color: 'var(--color-text-main)',
               backgroundColor: 'var(--color-surface)',
               border: `1px solid ${errors.email ? 'var(--status-overdue-text)' : 'var(--color-border)'}`,
@@ -163,13 +164,13 @@ export default function LoginPage() {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '4px',
+                gap: '5px',
                 color: 'var(--status-overdue-text)',
-                fontSize: '12px',
-                marginTop: '4px',
+                fontSize: 'var(--font-size-helper)',
+                marginTop: '5px',
               }}
             >
-              <AlertCircle size={13} />
+              <AlertCircle size={14} />
               <span>{errors.email}</span>
             </div>
           )}
@@ -188,7 +189,7 @@ export default function LoginPage() {
             <label
               htmlFor="password"
               style={{
-                fontSize: '13px',
+                fontSize: 'var(--font-size-form-label)',
                 fontWeight: 'var(--font-weight-medium)',
                 color: 'var(--color-text-main)',
               }}
@@ -198,7 +199,7 @@ export default function LoginPage() {
             <Link
               to="/forgot-password"
               style={{
-                fontSize: '12px',
+                fontSize: 'var(--font-size-helper)',
                 color: 'var(--color-primary)',
                 fontWeight: 'var(--font-weight-medium)',
               }}
@@ -221,13 +222,13 @@ export default function LoginPage() {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '4px',
+                gap: '5px',
                 color: 'var(--status-overdue-text)',
-                fontSize: '12px',
-                marginTop: '4px',
+                fontSize: 'var(--font-size-helper)',
+                marginTop: '5px',
               }}
             >
-              <AlertCircle size={13} />
+              <AlertCircle size={14} />
               <span>{errors.password}</span>
             </div>
           )}
@@ -243,8 +244,8 @@ export default function LoginPage() {
             onChange={handleChange}
             disabled={isLoading || loginSuccess}
             style={{
-              width: '16px',
-              height: '16px',
+              width: '18px',
+              height: '18px',
               accentColor: 'var(--color-primary)',
               cursor: 'pointer',
             }}
@@ -252,7 +253,7 @@ export default function LoginPage() {
           <label
             htmlFor="rememberMe"
             style={{
-              fontSize: '13px',
+              fontSize: 'var(--font-size-body)',
               color: 'var(--color-text-main)',
               cursor: 'pointer',
               userSelect: 'none',
@@ -269,8 +270,9 @@ export default function LoginPage() {
           disabled={isLoading || loginSuccess}
           style={{
             width: '100%',
+            height: '46px',
             padding: '10px 16px',
-            fontSize: '14px',
+            fontSize: 'var(--font-size-button)',
             fontWeight: 'var(--font-weight-semibold)',
             marginTop: 'var(--space-2)',
             display: 'flex',
@@ -279,7 +281,7 @@ export default function LoginPage() {
             gap: '8px',
           }}
         >
-          {isLoading && <Loader2 size={16} className="spin-loader" />}
+          {isLoading && <Loader2 size={18} className="spin-loader" />}
           <span>{isLoading ? 'Signing in...' : 'Sign in to Brightloop'}</span>
         </button>
 
@@ -296,7 +298,7 @@ export default function LoginPage() {
             type="button"
             onClick={handleFillDemo}
             style={{
-              fontSize: '11px',
+              fontSize: 'var(--font-size-helper)',
               color: 'var(--color-text-secondary)',
               textDecoration: 'underline',
               padding: '2px 6px',
@@ -314,7 +316,7 @@ export default function LoginPage() {
           paddingTop: 'var(--space-4)',
           borderTop: '1px solid var(--color-border)',
           textAlign: 'center',
-          fontSize: '13px',
+          fontSize: 'var(--font-size-body)',
           color: 'var(--color-text-secondary)',
         }}
       >
@@ -332,4 +334,3 @@ export default function LoginPage() {
     </div>
   );
 }
-

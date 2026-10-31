@@ -3,6 +3,8 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout';
 import AuthLayout from './layouts/AuthLayout';
 import DashboardPage from './pages/DashboardPage';
+import ProductsPage from './pages/ProductsPage';
+import PlansPage from './pages/PlansPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
@@ -23,7 +25,7 @@ function PlaceholderPage({ title, description }) {
           borderRadius: 'var(--radius-xs)',
           backgroundColor: 'var(--color-surface-green)',
           color: 'var(--color-primary)',
-          fontSize: '11px',
+          fontSize: 'var(--font-size-badge)',
           fontWeight: 'var(--font-weight-semibold)',
           marginBottom: 'var(--space-3)',
           textTransform: 'uppercase',
@@ -34,7 +36,7 @@ function PlaceholderPage({ title, description }) {
       </div>
       <h1
         style={{
-          fontSize: 'var(--font-size-heading)',
+          fontSize: 'var(--font-size-heading-main)',
           fontWeight: 'var(--font-weight-semibold)',
           color: 'var(--color-secondary)',
           marginBottom: 'var(--space-2)',
@@ -72,14 +74,8 @@ export default function App() {
         <Route path="/" element={<MainLayout />}>
           <Route index element={<DashboardPage />} />
           {/* Main Menu */}
-          <Route
-            path="products"
-            element={<PlaceholderPage title="Products" description="Manage subscription products, recurring service items, and hardware packages." />}
-          />
-          <Route
-            path="plans"
-            element={<PlaceholderPage title="Plans" description="Configure pricing tiers, billing cycles, quotas, and feature entitlements." />}
-          />
+          <Route path="products" element={<ProductsPage />} />
+          <Route path="plans" element={<PlansPage />} />
           <Route
             path="subscriptions"
             element={<PlaceholderPage title="Subscriptions" description="Manage customer subscription contracts, active renewals, upgrades, and cancellations." />}

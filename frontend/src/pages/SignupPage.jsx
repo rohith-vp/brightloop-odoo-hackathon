@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import PasswordInput from '../components/PasswordInput';
-import { Loader2, AlertCircle, CheckCircle2, Check, X } from 'lucide-react';
+import { Loader2, AlertCircle, CheckCircle2, Check } from 'lucide-react';
 
 export default function SignupPage() {
   const navigate = useNavigate();
@@ -109,10 +109,10 @@ export default function SignupPage() {
       <div style={{ marginBottom: 'var(--space-6)', textAlign: 'left' }}>
         <h1
           style={{
-            fontSize: 'var(--font-size-heading)',
+            fontSize: 'var(--font-size-heading-main)',
             fontWeight: 'var(--font-weight-semibold)',
             color: 'var(--color-secondary)',
-            marginBottom: '4px',
+            marginBottom: '6px',
             letterSpacing: '-0.02em',
           }}
         >
@@ -129,7 +129,7 @@ export default function SignupPage() {
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
-            padding: '10px 12px',
+            padding: '12px 14px',
             borderRadius: 'var(--radius-sm)',
             backgroundColor: 'var(--status-success-bg)',
             color: 'var(--status-success-text)',
@@ -137,7 +137,7 @@ export default function SignupPage() {
             marginBottom: 'var(--space-4)',
           }}
         >
-          <CheckCircle2 size={16} />
+          <CheckCircle2 size={18} />
           <span>Account created successfully! Redirecting to sign in...</span>
         </div>
       )}
@@ -149,7 +149,7 @@ export default function SignupPage() {
             htmlFor="fullName"
             style={{
               display: 'block',
-              fontSize: '13px',
+              fontSize: 'var(--font-size-form-label)',
               fontWeight: 'var(--font-weight-medium)',
               color: 'var(--color-text-main)',
               marginBottom: '6px',
@@ -168,8 +168,9 @@ export default function SignupPage() {
             disabled={isLoading || signupSuccess}
             style={{
               width: '100%',
-              padding: '9px 12px',
-              fontSize: 'var(--font-size-body)',
+              height: '46px',
+              padding: '10px 14px',
+              fontSize: 'var(--font-size-input)',
               color: 'var(--color-text-main)',
               backgroundColor: 'var(--color-surface)',
               border: `1px solid ${errors.fullName ? 'var(--status-overdue-text)' : 'var(--color-border)'}`,
@@ -192,13 +193,13 @@ export default function SignupPage() {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '4px',
+                gap: '5px',
                 color: 'var(--status-overdue-text)',
-                fontSize: '12px',
-                marginTop: '4px',
+                fontSize: 'var(--font-size-helper)',
+                marginTop: '5px',
               }}
             >
-              <AlertCircle size={13} />
+              <AlertCircle size={14} />
               <span>{errors.fullName}</span>
             </div>
           )}
@@ -210,7 +211,7 @@ export default function SignupPage() {
             htmlFor="email"
             style={{
               display: 'block',
-              fontSize: '13px',
+              fontSize: 'var(--font-size-form-label)',
               fontWeight: 'var(--font-weight-medium)',
               color: 'var(--color-text-main)',
               marginBottom: '6px',
@@ -229,8 +230,9 @@ export default function SignupPage() {
             disabled={isLoading || signupSuccess}
             style={{
               width: '100%',
-              padding: '9px 12px',
-              fontSize: 'var(--font-size-body)',
+              height: '46px',
+              padding: '10px 14px',
+              fontSize: 'var(--font-size-input)',
               color: 'var(--color-text-main)',
               backgroundColor: 'var(--color-surface)',
               border: `1px solid ${errors.email ? 'var(--status-overdue-text)' : 'var(--color-border)'}`,
@@ -253,13 +255,13 @@ export default function SignupPage() {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '4px',
+                gap: '5px',
                 color: 'var(--status-overdue-text)',
-                fontSize: '12px',
-                marginTop: '4px',
+                fontSize: 'var(--font-size-helper)',
+                marginTop: '5px',
               }}
             >
-              <AlertCircle size={13} />
+              <AlertCircle size={14} />
               <span>{errors.email}</span>
             </div>
           )}
@@ -271,7 +273,7 @@ export default function SignupPage() {
             htmlFor="password"
             style={{
               display: 'block',
-              fontSize: '13px',
+              fontSize: 'var(--font-size-form-label)',
               fontWeight: 'var(--font-weight-medium)',
               color: 'var(--color-text-main)',
               marginBottom: '6px',
@@ -294,13 +296,13 @@ export default function SignupPage() {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '4px',
+                gap: '5px',
                 color: 'var(--status-overdue-text)',
-                fontSize: '12px',
-                marginTop: '4px',
+                fontSize: 'var(--font-size-helper)',
+                marginTop: '5px',
               }}
             >
-              <AlertCircle size={13} />
+              <AlertCircle size={14} />
               <span>{errors.password}</span>
             </div>
           )}
@@ -309,18 +311,18 @@ export default function SignupPage() {
           <div
             style={{
               marginTop: 'var(--space-3)',
-              padding: '10px 12px',
+              padding: '12px 14px',
               backgroundColor: '#FAFCFB',
               border: '1px solid var(--color-border)',
               borderRadius: 'var(--radius-sm)',
               display: 'flex',
               flexDirection: 'column',
-              gap: '6px',
+              gap: '7px',
             }}
           >
             <span
               style={{
-                fontSize: '11px',
+                fontSize: '12px',
                 fontWeight: 'var(--font-weight-semibold)',
                 color: 'var(--color-text-secondary)',
                 letterSpacing: '0.03em',
@@ -336,15 +338,15 @@ export default function SignupPage() {
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '6px',
-                  fontSize: '12px',
+                  gap: '8px',
+                  fontSize: 'var(--font-size-helper)',
                   color: c.valid ? 'var(--color-primary)' : 'var(--color-text-secondary)',
                   fontWeight: c.valid ? 'var(--font-weight-medium)' : 'var(--font-weight-regular)',
                   transition: 'color 0.15s ease',
                 }}
               >
                 {c.valid ? (
-                  <Check size={14} style={{ color: 'var(--color-primary)', strokeWidth: 2.5 }} />
+                  <Check size={16} style={{ color: 'var(--color-primary)', strokeWidth: 2.5 }} />
                 ) : (
                   <span
                     style={{
@@ -352,7 +354,7 @@ export default function SignupPage() {
                       height: '6px',
                       borderRadius: '50%',
                       backgroundColor: 'var(--color-border)',
-                      margin: '0 4px',
+                      margin: '0 5px',
                       display: 'inline-block',
                     }}
                   />
@@ -369,7 +371,7 @@ export default function SignupPage() {
             htmlFor="confirmPassword"
             style={{
               display: 'block',
-              fontSize: '13px',
+              fontSize: 'var(--font-size-form-label)',
               fontWeight: 'var(--font-weight-medium)',
               color: 'var(--color-text-main)',
               marginBottom: '6px',
@@ -392,13 +394,13 @@ export default function SignupPage() {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '4px',
+                gap: '5px',
                 color: 'var(--status-overdue-text)',
-                fontSize: '12px',
-                marginTop: '4px',
+                fontSize: 'var(--font-size-helper)',
+                marginTop: '5px',
               }}
             >
-              <AlertCircle size={13} />
+              <AlertCircle size={14} />
               <span>{errors.confirmPassword}</span>
             </div>
           )}
@@ -411,8 +413,9 @@ export default function SignupPage() {
           disabled={isLoading || signupSuccess}
           style={{
             width: '100%',
+            height: '46px',
             padding: '10px 16px',
-            fontSize: '14px',
+            fontSize: 'var(--font-size-button)',
             fontWeight: 'var(--font-weight-semibold)',
             marginTop: 'var(--space-2)',
             display: 'flex',
@@ -421,7 +424,7 @@ export default function SignupPage() {
             gap: '8px',
           }}
         >
-          {isLoading && <Loader2 size={16} className="spin-loader" />}
+          {isLoading && <Loader2 size={18} className="spin-loader" />}
           <span>{isLoading ? 'Creating account...' : 'Create Brightloop account'}</span>
         </button>
       </form>
@@ -433,7 +436,7 @@ export default function SignupPage() {
           paddingTop: 'var(--space-4)',
           borderTop: '1px solid var(--color-border)',
           textAlign: 'center',
-          fontSize: '13px',
+          fontSize: 'var(--font-size-body)',
           color: 'var(--color-text-secondary)',
         }}
       >
@@ -451,4 +454,3 @@ export default function SignupPage() {
     </div>
   );
 }
-

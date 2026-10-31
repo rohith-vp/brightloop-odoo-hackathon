@@ -28,8 +28,10 @@ export default function PasswordInput({
         autoComplete={autoComplete}
         style={{
           width: '100%',
-          padding: '9px 38px 9px 12px',
-          fontSize: 'var(--font-size-body)',
+          height: '46px',
+          padding: '10px 42px 10px 14px',
+          fontSize: 'var(--font-size-input)',
+          fontWeight: 'var(--font-weight-regular)',
           color: 'var(--color-text-main)',
           backgroundColor: 'var(--color-surface)',
           border: `1px solid ${error ? 'var(--status-overdue-text)' : 'var(--color-border)'}`,
@@ -54,21 +56,20 @@ export default function PasswordInput({
         disabled={disabled}
         style={{
           position: 'absolute',
-          right: '8px',
+          right: '10px',
           top: '50%',
           transform: 'translateY(-50%)',
           display: 'inline-flex',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: '4px',
+          padding: '6px',
           color: 'var(--color-text-secondary)',
           cursor: disabled ? 'not-allowed' : 'pointer',
           borderRadius: 'var(--radius-xs)',
         }}
       >
-        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
       </button>
     </div>
   );
 }
-

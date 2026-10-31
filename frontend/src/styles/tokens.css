@@ -1,4 +1,4 @@
-/* Centralized Design Tokens for Brightloop - Phase 1 Visual Redesign */
+/* Centralized Design Tokens for Brightloop - Phase 1 Visual Redesign & Global Typography Scale */
 :root {
   /* Three Core Design Colours */
   --color-primary: #087A4B;       /* Emerald green */
@@ -23,12 +23,30 @@
   --status-overdue-bg: #FEE2E2;
   --status-overdue-text: #B91C1C;
 
-  /* Typography Scale (Inter ONLY) */
+  /* Global Typography Scale (Inter as ONLY font) */
   --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-size-supporting: 0.75rem; /* 11–12px */
-  --font-size-body: 0.84375rem;    /* 13–14px */
-  --font-size-section: 1rem;       /* 15–17px */
-  --font-size-heading: 1.5625rem;  /* 24–26px */
+  
+  --font-size-heading-main: clamp(1.75rem, 2.2vw, 1.875rem); /* 28–30px */
+  --font-size-heading-section: 1.375rem;                       /* 21–23px (22px) */
+  --font-size-heading-card: 1.125rem;                          /* 17–19px (18px) */
+  --font-size-body: 0.9375rem;                                 /* 15–16px (15px) */
+  --font-size-table-content: 0.9375rem;                        /* 15px */
+  --font-size-table-header: 0.875rem;                          /* 14px */
+  --font-size-form-label: 0.9375rem;                           /* 15px */
+  --font-size-input: 1rem;                                     /* 16px */
+  --font-size-button: 0.9375rem;                               /* 15–16px */
+  --font-size-nav: 0.9375rem;                                  /* 15–16px */
+  --font-size-navbar: 0.9375rem;                               /* 15px */
+  --font-size-helper: 0.84375rem;                              /* 13–14px (13.5px) */
+  --font-size-badge: 0.8125rem;                                /* 13px */
+  --font-size-metric-value: clamp(1.6875rem, 2.2vw, 1.875rem); /* 27–30px */
+  --font-size-metric-label: 0.90625rem;                        /* 14–15px */
+  --font-size-section-label: 0.8125rem;                        /* 13px */
+
+  /* Legacy aliases for backward compatibility */
+  --font-size-supporting: var(--font-size-helper);
+  --font-size-section: var(--font-size-heading-section);
+  --font-size-heading: var(--font-size-heading-main);
   
   --font-weight-regular: 400;
   --font-weight-medium: 500;
@@ -53,7 +71,7 @@
   --breakpoint-large: 1280px;
 
   /* Layout Dimensions */
-  --sidebar-width: 245px;
+  --sidebar-width: 256px;
   --navbar-height: 64px;
   --radius-xs: 4px;
   --radius-sm: 6px;

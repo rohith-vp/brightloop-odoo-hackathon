@@ -37,24 +37,24 @@ export default function Navbar({ onToggleSidebar }) {
           aria-label="Toggle navigation menu"
           className="mobile-nav-toggle btn-icon"
         >
-          <Menu size={18} />
+          <Menu size={20} />
         </button>
 
         {/* Clean Fintech Breadcrumbs */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span
             style={{
-              fontSize: 'var(--font-size-body)',
+              fontSize: 'var(--font-size-navbar)',
               color: 'var(--color-text-secondary)',
               fontWeight: 'var(--font-weight-regular)',
             }}
           >
             Dashboard
           </span>
-          <span style={{ color: 'var(--color-text-secondary)', fontSize: '11px' }}>/</span>
+          <span style={{ color: 'var(--color-text-secondary)', fontSize: '13px' }}>/</span>
           <span
             style={{
-              fontSize: 'var(--font-size-body)',
+              fontSize: 'var(--font-size-navbar)',
               color: 'var(--color-text-main)',
               fontWeight: 'var(--font-weight-semibold)',
             }}
@@ -69,18 +69,19 @@ export default function Navbar({ onToggleSidebar }) {
         style={{
           display: 'none',
           alignItems: 'center',
-          maxWidth: '360px',
+          maxWidth: '380px',
           width: '100%',
           margin: '0 var(--space-4)',
         }}
         className="navbar-search-desktop"
       >
-        <div className="search-input-wrapper" style={{ width: '100%' }}>
-          <Search size={15} style={{ color: 'var(--color-text-secondary)' }} />
+        <div className="search-input-wrapper" style={{ width: '100%', minHeight: '38px', padding: '6px 12px' }}>
+          <Search size={16} style={{ color: 'var(--color-text-secondary)' }} />
           <input
             type="text"
             className="search-input"
             placeholder="Search subscriptions, invoices, customers..."
+            style={{ fontSize: '14px' }}
           />
         </div>
       </div>
@@ -93,7 +94,7 @@ export default function Navbar({ onToggleSidebar }) {
           title="Help & Documentation"
           aria-label="Help"
         >
-          <HelpCircle size={17} />
+          <HelpCircle size={18} />
         </button>
 
         <button
@@ -102,7 +103,7 @@ export default function Navbar({ onToggleSidebar }) {
           title="Messages"
           aria-label="Messages"
         >
-          <MessageSquare size={17} />
+          <MessageSquare size={18} />
         </button>
 
         <button
@@ -112,15 +113,15 @@ export default function Navbar({ onToggleSidebar }) {
           aria-label="Notifications"
           style={{ position: 'relative' }}
         >
-          <Bell size={17} />
+          <Bell size={18} />
           {/* Subtle emerald notification dot */}
           <span
             style={{
               position: 'absolute',
               top: '7px',
               right: '7px',
-              width: '6px',
-              height: '6px',
+              width: '7px',
+              height: '7px',
               borderRadius: '50%',
               backgroundColor: 'var(--color-primary)',
             }}
@@ -129,10 +130,10 @@ export default function Navbar({ onToggleSidebar }) {
 
         <div
           style={{
-            height: '22px',
+            height: '24px',
             width: '1px',
             backgroundColor: 'var(--color-border)',
-            margin: '0 var(--space-1)',
+            margin: '0 var(--space-2)',
           }}
         />
 
@@ -143,7 +144,7 @@ export default function Navbar({ onToggleSidebar }) {
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
-            padding: '4px 6px',
+            padding: '4px 8px',
             borderRadius: 'var(--radius-sm)',
             transition: 'background-color 0.15s ease',
           }}
@@ -151,13 +152,13 @@ export default function Navbar({ onToggleSidebar }) {
         >
           <div
             style={{
-              width: '28px',
-              height: '28px',
+              width: '32px',
+              height: '32px',
               borderRadius: '50%',
               backgroundColor: 'var(--color-surface-green)',
               color: 'var(--color-primary)',
               fontWeight: 'var(--font-weight-semibold)',
-              fontSize: '11px',
+              fontSize: '13px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -167,7 +168,7 @@ export default function Navbar({ onToggleSidebar }) {
           </div>
           <span
             style={{
-              fontSize: '13px',
+              fontSize: 'var(--font-size-navbar)',
               fontWeight: 'var(--font-weight-medium)',
               color: 'var(--color-text-main)',
               display: 'none',
@@ -176,7 +177,7 @@ export default function Navbar({ onToggleSidebar }) {
           >
             Rohith V P
           </span>
-          <ChevronDown size={14} style={{ color: 'var(--color-text-secondary)' }} />
+          <ChevronDown size={15} style={{ color: 'var(--color-text-secondary)' }} />
         </button>
       </div>
     </header>

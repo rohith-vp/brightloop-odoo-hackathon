@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Loader2, AlertCircle, CheckCircle2, ArrowLeft, Mail } from 'lucide-react';
+import { Loader2, AlertCircle, ArrowLeft, Mail } from 'lucide-react';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -50,13 +50,13 @@ export default function ForgotPasswordPage() {
           display: 'inline-flex',
           alignItems: 'center',
           gap: '6px',
-          fontSize: '13px',
+          fontSize: 'var(--font-size-body)',
           color: 'var(--color-text-secondary)',
           fontWeight: 'var(--font-weight-medium)',
           marginBottom: 'var(--space-4)',
         }}
       >
-        <ArrowLeft size={15} />
+        <ArrowLeft size={16} />
         <span>Back to sign in</span>
       </Link>
 
@@ -65,8 +65,8 @@ export default function ForgotPasswordPage() {
         <div style={{ textAlign: 'center', padding: 'var(--space-2) 0' }}>
           <div
             style={{
-              width: '48px',
-              height: '48px',
+              width: '52px',
+              height: '52px',
               borderRadius: '50%',
               backgroundColor: 'var(--status-success-bg)',
               color: 'var(--status-success-text)',
@@ -76,12 +76,12 @@ export default function ForgotPasswordPage() {
               margin: '0 auto var(--space-4)',
             }}
           >
-            <Mail size={24} />
+            <Mail size={26} />
           </div>
 
           <h1
             style={{
-              fontSize: 'var(--font-size-heading)',
+              fontSize: 'var(--font-size-heading-main)',
               fontWeight: 'var(--font-weight-semibold)',
               color: 'var(--color-secondary)',
               marginBottom: '8px',
@@ -110,8 +110,9 @@ export default function ForgotPasswordPage() {
               className="btn btn-primary"
               style={{
                 width: '100%',
+                height: '46px',
                 padding: '10px 16px',
-                fontSize: '14px',
+                fontSize: 'var(--font-size-button)',
                 fontWeight: 'var(--font-weight-semibold)',
                 textAlign: 'center',
                 boxSizing: 'border-box',
@@ -127,8 +128,9 @@ export default function ForgotPasswordPage() {
               className="btn btn-secondary"
               style={{
                 width: '100%',
+                height: '44px',
                 padding: '9px 16px',
-                fontSize: '13px',
+                fontSize: 'var(--font-size-body)',
               }}
             >
               {isLoading ? 'Resending...' : "Didn't receive email? Resend link"}
@@ -141,10 +143,10 @@ export default function ForgotPasswordPage() {
           <div style={{ marginBottom: 'var(--space-6)', textAlign: 'left' }}>
             <h1
               style={{
-                fontSize: 'var(--font-size-heading)',
+                fontSize: 'var(--font-size-heading-main)',
                 fontWeight: 'var(--font-weight-semibold)',
                 color: 'var(--color-secondary)',
-                marginBottom: '4px',
+                marginBottom: '6px',
                 letterSpacing: '-0.02em',
               }}
             >
@@ -161,7 +163,7 @@ export default function ForgotPasswordPage() {
                 htmlFor="email"
                 style={{
                   display: 'block',
-                  fontSize: '13px',
+                  fontSize: 'var(--font-size-form-label)',
                   fontWeight: 'var(--font-weight-medium)',
                   color: 'var(--color-text-main)',
                   marginBottom: '6px',
@@ -183,8 +185,9 @@ export default function ForgotPasswordPage() {
                 disabled={isLoading}
                 style={{
                   width: '100%',
-                  padding: '9px 12px',
-                  fontSize: 'var(--font-size-body)',
+                  height: '46px',
+                  padding: '10px 14px',
+                  fontSize: 'var(--font-size-input)',
                   color: 'var(--color-text-main)',
                   backgroundColor: 'var(--color-surface)',
                   border: `1px solid ${error ? 'var(--status-overdue-text)' : 'var(--color-border)'}`,
@@ -207,13 +210,13 @@ export default function ForgotPasswordPage() {
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '4px',
+                    gap: '5px',
                     color: 'var(--status-overdue-text)',
-                    fontSize: '12px',
-                    marginTop: '4px',
+                    fontSize: 'var(--font-size-helper)',
+                    marginTop: '5px',
                   }}
                 >
-                  <AlertCircle size={13} />
+                  <AlertCircle size={14} />
                   <span>{error}</span>
                 </div>
               )}
@@ -225,8 +228,9 @@ export default function ForgotPasswordPage() {
               disabled={isLoading}
               style={{
                 width: '100%',
+                height: '46px',
                 padding: '10px 16px',
-                fontSize: '14px',
+                fontSize: 'var(--font-size-button)',
                 fontWeight: 'var(--font-weight-semibold)',
                 marginTop: 'var(--space-2)',
                 display: 'flex',
@@ -235,7 +239,7 @@ export default function ForgotPasswordPage() {
                 gap: '8px',
               }}
             >
-              {isLoading && <Loader2 size={16} className="spin-loader" />}
+              {isLoading && <Loader2 size={18} className="spin-loader" />}
               <span>{isLoading ? 'Sending reset link...' : 'Send reset link'}</span>
             </button>
           </form>
@@ -246,7 +250,7 @@ export default function ForgotPasswordPage() {
               paddingTop: 'var(--space-4)',
               borderTop: '1px solid var(--color-border)',
               textAlign: 'center',
-              fontSize: '13px',
+              fontSize: 'var(--font-size-body)',
               color: 'var(--color-text-secondary)',
             }}
           >
@@ -266,4 +270,3 @@ export default function ForgotPasswordPage() {
     </div>
   );
 }
-
