@@ -78,8 +78,9 @@ export default function SubscriptionDetailsModal({
           flexDirection: 'column',
           borderRadius: 'var(--radius-lg)',
           boxShadow: 'var(--shadow-xl)',
-          backgroundColor: 'var(--color-surface-white)',
+          backgroundColor: '#FFFFFF',
           overflow: 'hidden',
+          overflowX: 'hidden',
         }}
       >
         {/* Header */}
@@ -90,7 +91,7 @@ export default function SubscriptionDetailsModal({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            backgroundColor: 'var(--color-surface-white)',
+            backgroundColor: '#FFFFFF',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
@@ -156,9 +157,12 @@ export default function SubscriptionDetailsModal({
           style={{
             padding: 'var(--space-6)',
             overflowY: 'auto',
+            overflowX: 'hidden',
             display: 'flex',
             flexDirection: 'column',
             gap: 'var(--space-6)',
+            width: '100%',
+            boxSizing: 'border-box',
           }}
         >
           {/* Top Info Grid */}

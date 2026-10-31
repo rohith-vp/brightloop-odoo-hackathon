@@ -33,7 +33,7 @@ export default function CustomerPaymentReceiptModal({ isOpen, onClose, payment }
           maxWidth: '520px',
           borderRadius: 'var(--radius-lg)',
           boxShadow: 'var(--shadow-xl)',
-          backgroundColor: 'var(--color-surface-white)',
+          backgroundColor: '#FFFFFF',
           padding: 'var(--space-6)',
           display: 'flex',
           flexDirection: 'column',

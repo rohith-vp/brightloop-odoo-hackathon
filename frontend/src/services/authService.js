@@ -19,10 +19,10 @@ export const MOCK_USERS = [
     id: 'usr_admin_1',
     email: 'admin@brightloop.io',
     password: 'Password@123',
-    name: 'Rohith V P',
+    name: 'System Admin',
     role: USER_ROLES.ADMIN,
     title: 'System Administrator',
-    avatar: 'RV',
+    avatar: 'SA',
     customerId: null,
   },
   {
@@ -126,7 +126,14 @@ class AuthService {
   getCurrentUser() {
     try {
       const stored = localStorage.getItem(AUTH_STORAGE_KEY);
-      return stored ? JSON.parse(stored) : null;
+      if (!stored) return null;
+      const user = JSON.parse(stored);
+      if (user && user.name === 'Rohith V P') {
+        user.name = 'System Admin';
+        user.avatar = 'SA';
+        localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
+      }
+      return user;
     } catch {
       return null;
     }

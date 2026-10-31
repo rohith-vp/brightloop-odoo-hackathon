@@ -68,7 +68,7 @@ export default function InvoiceViewModal({
           flexDirection: 'column',
           borderRadius: 'var(--radius-lg)',
           boxShadow: 'var(--shadow-xl)',
-          backgroundColor: 'var(--color-surface-white)',
+          backgroundColor: '#FFFFFF',
           overflow: 'hidden',
         }}
       >
@@ -80,7 +80,7 @@ export default function InvoiceViewModal({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            backgroundColor: 'var(--color-surface-white)',
+            backgroundColor: '#FFFFFF',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
@@ -343,7 +343,7 @@ export default function InvoiceViewModal({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            backgroundColor: 'var(--color-surface-white)',
+            backgroundColor: '#FFFFFF',
           }}
         >
           <button type="button" onClick={onClose} className="btn-secondary" style={{ padding: '9px 18px' }}>

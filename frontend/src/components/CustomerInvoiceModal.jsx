@@ -56,7 +56,7 @@ export default function CustomerInvoiceModal({ isOpen, onClose, invoice }) {
           maxHeight: '90vh',
           borderRadius: 'var(--radius-lg)',
           boxShadow: 'var(--shadow-xl)',
-          backgroundColor: 'var(--color-surface-white)',
+          backgroundColor: '#FFFFFF',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',

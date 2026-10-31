@@ -235,8 +235,9 @@ export default function SubscriptionModal({
           flexDirection: 'column',
           borderRadius: 'var(--radius-lg)',
           boxShadow: 'var(--shadow-xl)',
-          backgroundColor: 'var(--color-surface-white)',
+          backgroundColor: '#FFFFFF',
           overflow: 'hidden',
+          overflowX: 'hidden',
         }}
       >
         {/* Header */}
@@ -247,7 +248,8 @@ export default function SubscriptionModal({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            backgroundColor: 'var(--color-surface-white)',
+            backgroundColor: '#FFFFFF',
+            flexShrink: 0,
           }}
         >
           <div>
@@ -278,9 +280,13 @@ export default function SubscriptionModal({
           style={{
             padding: 'var(--space-6)',
             overflowY: 'auto',
+            overflowX: 'hidden',
             display: 'flex',
             flexDirection: 'column',
             gap: 'var(--space-5)',
+            width: '100%',
+            boxSizing: 'border-box',
+            backgroundColor: '#FFFFFF',
           }}
         >
           {/* Mode Selector Tabs */}
@@ -367,7 +373,7 @@ export default function SubscriptionModal({
           )}
 
           {/* Customer Selection */}
-          <div>
+          <div style={{ width: '100%', maxWidth: '100%' }}>
             <label className="form-label" style={{ fontSize: 'var(--font-size-form-label)' }}>
               Customer Account <span style={{ color: 'var(--color-error)' }}>*</span>
             </label>
@@ -375,7 +381,7 @@ export default function SubscriptionModal({
               value={selectedCustomerId}
               onChange={(e) => setSelectedCustomerId(e.target.value)}
               className="input-field"
-              style={{ height: '46px', fontSize: 'var(--font-size-input)' }}
+              style={{ height: '46px', fontSize: 'var(--font-size-input)', width: '100%', maxWidth: '100%', boxSizing: 'border-box' }}
               disabled={creationMode === 'quotation' && !!selectedQuoteId}
             >
               <option value="">Select customer directory</option>
@@ -393,8 +399,8 @@ export default function SubscriptionModal({
           </div>
 
           {/* Product & Plan Pairing */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 'var(--space-4)' }}>
-            <div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: 'var(--space-4)', width: '100%' }}>
+            <div style={{ minWidth: 0 }}>
               <label className="form-label" style={{ fontSize: 'var(--font-size-form-label)' }}>
                 Product <span style={{ color: 'var(--color-error)' }}>*</span>
               </label>
@@ -402,7 +408,7 @@ export default function SubscriptionModal({
                 value={selectedProductId}
                 onChange={(e) => handleProductChange(e.target.value)}
                 className="input-field"
-                style={{ height: '46px', fontSize: 'var(--font-size-input)' }}
+                style={{ height: '46px', fontSize: 'var(--font-size-input)', width: '100%', maxWidth: '100%', boxSizing: 'border-box' }}
               >
                 <option value="">Select product</option>
                 {products.map((prod) => (
@@ -418,7 +424,7 @@ export default function SubscriptionModal({
               )}
             </div>
 
-            <div>
+            <div style={{ minWidth: 0 }}>
               <label className="form-label" style={{ fontSize: 'var(--font-size-form-label)' }}>
                 Subscription Plan <span style={{ color: 'var(--color-error)' }}>*</span>
               </label>
@@ -426,7 +432,7 @@ export default function SubscriptionModal({
                 value={selectedPlanId}
                 onChange={(e) => handlePlanChange(e.target.value)}
                 className="input-field"
-                style={{ height: '46px', fontSize: 'var(--font-size-input)' }}
+                style={{ height: '46px', fontSize: 'var(--font-size-input)', width: '100%', maxWidth: '100%', boxSizing: 'border-box' }}
               >
                 <option value="">Select plan</option>
                 {plans
@@ -451,8 +457,8 @@ export default function SubscriptionModal({
           </div>
 
           {/* Quantity, Frequency & Pricing */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 'var(--space-4)' }}>
-            <div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 130px), 1fr))', gap: 'var(--space-4)', width: '100%' }}>
+            <div style={{ minWidth: 0 }}>
               <label className="form-label" style={{ fontSize: 'var(--font-size-form-label)' }}>
                 Quantity <span style={{ color: 'var(--color-error)' }}>*</span>
               </label>
@@ -462,7 +468,7 @@ export default function SubscriptionModal({
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
                 className="input-field"
-                style={{ height: '46px', fontSize: 'var(--font-size-input)' }}
+                style={{ height: '46px', fontSize: 'var(--font-size-input)', width: '100%', maxWidth: '100%', boxSizing: 'border-box' }}
               />
               {errors.quantity && (
                 <p style={{ color: 'var(--color-error)', fontSize: 'var(--font-size-helper)', marginTop: '4px' }}>
@@ -471,7 +477,7 @@ export default function SubscriptionModal({
               )}
             </div>
 
-            <div>
+            <div style={{ minWidth: 0 }}>
               <label className="form-label" style={{ fontSize: 'var(--font-size-form-label)' }}>
                 Billing Frequency
               </label>
@@ -479,7 +485,7 @@ export default function SubscriptionModal({
                 value={billingFrequency}
                 onChange={(e) => handleFrequencyChange(e.target.value)}
                 className="input-field"
-                style={{ height: '46px', fontSize: 'var(--font-size-input)' }}
+                style={{ height: '46px', fontSize: 'var(--font-size-input)', width: '100%', maxWidth: '100%', boxSizing: 'border-box' }}
               >
                 {BILLING_FREQUENCIES.map((freq) => (
                   <option key={freq} value={freq}>
@@ -489,7 +495,7 @@ export default function SubscriptionModal({
               </select>
             </div>
 
-            <div>
+            <div style={{ minWidth: 0 }}>
               <label className="form-label" style={{ fontSize: 'var(--font-size-form-label)' }}>
                 Unit Price (₹)
               </label>
@@ -499,11 +505,11 @@ export default function SubscriptionModal({
                 value={unitPrice}
                 onChange={(e) => setUnitPrice(e.target.value)}
                 className="input-field"
-                style={{ height: '46px', fontSize: 'var(--font-size-input)' }}
+                style={{ height: '46px', fontSize: 'var(--font-size-input)', width: '100%', maxWidth: '100%', boxSizing: 'border-box' }}
               />
             </div>
 
-            <div>
+            <div style={{ minWidth: 0 }}>
               <label className="form-label" style={{ fontSize: 'var(--font-size-form-label)' }}>
                 Total Recurring Amount
               </label>
@@ -519,6 +525,12 @@ export default function SubscriptionModal({
                   fontSize: '17px',
                   fontWeight: 'var(--font-weight-bold)',
                   color: 'var(--color-primary)',
+                  width: '100%',
+                  maxWidth: '100%',
+                  boxSizing: 'border-box',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
                 }}
               >
                 ₹{totalPrice.toLocaleString('en-IN')}
@@ -527,8 +539,8 @@ export default function SubscriptionModal({
           </div>
 
           {/* Dates */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 'var(--space-4)' }}>
-            <div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: 'var(--space-4)', width: '100%' }}>
+            <div style={{ minWidth: 0 }}>
               <label className="form-label" style={{ fontSize: 'var(--font-size-form-label)' }}>
                 Start Date <span style={{ color: 'var(--color-error)' }}>*</span>
               </label>
@@ -537,7 +549,7 @@ export default function SubscriptionModal({
                 value={startDate}
                 onChange={(e) => handleStartDateChange(e.target.value)}
                 className="input-field"
-                style={{ height: '46px', fontSize: 'var(--font-size-input)' }}
+                style={{ height: '46px', fontSize: 'var(--font-size-input)', width: '100%', maxWidth: '100%', boxSizing: 'border-box' }}
               />
               {errors.startDate && (
                 <p style={{ color: 'var(--color-error)', fontSize: 'var(--font-size-helper)', marginTop: '4px' }}>
@@ -546,7 +558,7 @@ export default function SubscriptionModal({
               )}
             </div>
 
-            <div>
+            <div style={{ minWidth: 0 }}>
               <label className="form-label" style={{ fontSize: 'var(--font-size-form-label)' }}>
                 End Date (Scheduled Expiry) <span style={{ color: 'var(--color-error)' }}>*</span>
               </label>
@@ -555,7 +567,7 @@ export default function SubscriptionModal({
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
                 className="input-field"
-                style={{ height: '46px', fontSize: 'var(--font-size-input)' }}
+                style={{ height: '46px', fontSize: 'var(--font-size-input)', width: '100%', maxWidth: '100%', boxSizing: 'border-box' }}
               />
               {errors.endDate && (
                 <p style={{ color: 'var(--color-error)', fontSize: 'var(--font-size-helper)', marginTop: '4px' }}>
@@ -566,7 +578,7 @@ export default function SubscriptionModal({
           </div>
 
           {/* Notes */}
-          <div>
+          <div style={{ width: '100%', maxWidth: '100%' }}>
             <label className="form-label" style={{ fontSize: 'var(--font-size-form-label)' }}>
               Contract Notes & Fulfillment Details
             </label>
@@ -576,7 +588,7 @@ export default function SubscriptionModal({
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Provisioning instructions, SLA specifications, or client contact agreements..."
               className="input-field"
-              style={{ fontSize: 'var(--font-size-input)', resize: 'vertical' }}
+              style={{ fontSize: 'var(--font-size-input)', resize: 'vertical', width: '100%', maxWidth: '100%', boxSizing: 'border-box' }}
             />
           </div>
         </div>
@@ -589,7 +601,10 @@ export default function SubscriptionModal({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            backgroundColor: 'var(--color-surface-white)',
+            backgroundColor: '#FFFFFF',
+            flexWrap: 'wrap',
+            gap: '12px',
+            flexShrink: 0,
           }}
         >
           <button type="button" onClick={onClose} className="btn-secondary" style={{ padding: '10px 18px' }}>

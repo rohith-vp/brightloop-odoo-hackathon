@@ -146,7 +146,7 @@ export default function PaymentModal({ isOpen, onClose, onSave, preselectedInvoi
           flexDirection: 'column',
           borderRadius: 'var(--radius-lg)',
           boxShadow: 'var(--shadow-xl)',
-          backgroundColor: 'var(--color-surface-white)',
+          backgroundColor: '#FFFFFF',
           overflow: 'hidden',
         }}
       >
@@ -158,6 +158,7 @@ export default function PaymentModal({ isOpen, onClose, onSave, preselectedInvoi
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
+            backgroundColor: '#FFFFFF',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
@@ -196,7 +197,7 @@ export default function PaymentModal({ isOpen, onClose, onSave, preselectedInvoi
         </div>
 
         {/* Body */}
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden', backgroundColor: '#FFFFFF' }}>
           <div
             style={{
               padding: 'var(--space-6)',
@@ -205,6 +206,7 @@ export default function PaymentModal({ isOpen, onClose, onSave, preselectedInvoi
               flexDirection: 'column',
               gap: 'var(--space-4)',
               flex: 1,
+              backgroundColor: '#FFFFFF',
             }}
           >
             {/* Customer & Invoice Selection */}
@@ -400,7 +402,7 @@ export default function PaymentModal({ isOpen, onClose, onSave, preselectedInvoi
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              backgroundColor: 'var(--color-surface-white)',
+              backgroundColor: '#FFFFFF',
             }}
           >
             <button type="button" onClick={onClose} className="btn-secondary" style={{ padding: '9px 18px' }}>

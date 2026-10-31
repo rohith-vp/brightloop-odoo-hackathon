@@ -164,7 +164,7 @@ export default function SignupPage() {
             autoComplete="name"
             value={formData.fullName}
             onChange={handleChange}
-            placeholder="Rohith V P"
+            placeholder="Alex Morgan"
             disabled={isLoading || signupSuccess}
             style={{
               width: '100%',
@@ -226,7 +226,7 @@ export default function SignupPage() {
             autoComplete="email"
             value={formData.email}
             onChange={handleChange}
-            placeholder="rohith@company.com"
+            placeholder="alex@company.com"
             disabled={isLoading || signupSuccess}
             style={{
               width: '100%',
