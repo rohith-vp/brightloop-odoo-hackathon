@@ -319,29 +319,32 @@ Suggested list filters: `status`, `customer_id`, `plan_id`.
 
 ## 5. Invoices and batch billing
 
-  ---------------------------------------------------------------------------------
-  Method            Endpoint                  Purpose             Access
-  ----------------- ------------------------- ------------------- -----------------
-  `GET`             `/invoices`               List invoices;      Admin/Staff
-                                              support pagination  
-                                              and filters         
+Invoices are created by the batch run. Statuses: `DRAFT`, `CONFIRMED`,
+`PAID`, `CANCELLED`. `PAID` is set by the payments module.
 
-  `GET`             `/invoices/{invoiceId}`   Get invoice details Admin/Staff;
-                                              and                 owner via portal
-                                              line/tax/discount   
-                                              breakdown           
+  ------------------------------------------------------------------------------------
+  Method            Endpoint                          Purpose              Access
+  ----------------- --------------------------------- -------------------- -----------
+  `GET`             `/invoices`                       List invoices. Filters: Admin/Staff
+                                                      `status`,
+                                                      `subscription_id`
 
-  `POST`            `/billing/run`            Generate invoices   Admin/Staff
-                                              for eligible Active 
-                                              subscriptions for a 
-                                              billing period      
-  ---------------------------------------------------------------------------------
+  `GET`             `/invoices/{invoiceId}`           Get one invoice      Admin/Staff
+
+  `POST`            `/invoices/{invoiceId}/confirm`   DRAFT -> CONFIRMED   Admin/Staff
+
+  `POST`            `/invoices/{invoiceId}/cancel`    DRAFT or CONFIRMED   Admin/Staff
+                                                      -> CANCELLED
+
+  `POST`            `/billing/run`                    Create every invoice Admin/Staff
+                                                      due as of a date
+  ------------------------------------------------------------------------------------
 
 ### Batch billing request
 
 ``` json
 {
-  "billing_period": "2026-10"
+  "as_of": "2026-10-15"
 }
 ```
 
@@ -350,36 +353,66 @@ Suggested list filters: `status`, `customer_id`, `plan_id`.
 ``` json
 {
   "data": {
-    "billing_period": "2026-10",
+    "as_of": "2026-10-15",
     "created_count": 1,
     "skipped_count": 0,
     "invoices": [
       {
-        "id": "inv_001",
-        "subscription_id": "sub_001",
-        "billing_period": "2026-10",
-        "status": "UNPAID",
-        "subtotal": "300.00",
-        "discount_amount": "0.00",
-        "tax_amount": "30.00",
-        "total": "330.00",
-        "amount_paid": "0.00",
-        "balance_due": "330.00",
-        "due_date": "2026-10-15"
+        "id": "...",
+        "number": "INV-000001",
+        "subscription_id": "...",
+        "period_start": "2026-10-01",
+        "period_end": "2026-11-01",
+        "total": "330.00"
       }
     ]
   }
 }
 ```
 
-The generator must be safe to run more than once. Enforce a unique
-`(subscription_id, billing_period)` pair in the database. A repeated run
-must not create duplicate invoices. Invoice creation and discount usage
-updates should be atomic.
+How a run works:
 
-Suggested invoice list filters: `status`, `customer_id`,
-`subscription_id`, `billing_period`, `due_date_from`, `due_date_to`,
-`overdue`.
+-   Only `ACTIVE` subscriptions whose start date is on or before `as_of`
+    are considered.
+-   Each subscription is billed for every period that has started by
+    `as_of` and is not yet invoiced. A missed run catches up on the next
+    run, so nothing is skipped.
+-   A period starting on or after the subscription's `expiry_date` is
+    not billed.
+-   All invoices in a run are created in one database transaction. If any
+    step fails, none are kept.
+-   A subscription with nothing due counts toward `skipped_count`.
+-   Running again for the same date creates nothing new. The database
+    enforces one invoice per `(subscription_id, period_start)`, and runs
+    take a lock so concurrent requests cannot both create the same invoice.
+
+### Invoice amounts
+
+Each invoice stores quantity, unit price, subtotal, discount (0.00 until
+the discount engine exists), tax rate, tax amount, and total. Tax is
+calculated on the taxable amount, rounded half up to the cent. See
+`docs/billing-rules.md` section 5.
+
+Invoice due date: the period start plus the subscription's
+`payment_terms_days` (default 15).
+
+## 4a. Subscription lifecycle (reference)
+
+Subscriptions move through these actions. Each route is
+`POST /subscriptions/{subscriptionId}/{action}`, and returns 409
+`INVALID_TRANSITION` for any action the current state does not allow.
+
+  ----------------------------------------------------
+  From        Action        To
+  ----------- ------------- ----------------------------
+  DRAFT       `confirm`     CONFIRMED
+
+  CONFIRMED   `activate`    ACTIVE
+
+  ACTIVE      `close`       CLOSED
+  ----------------------------------------------------
+
+CLOSED is final. The database and the state machine both enforce this.
 
 ## 6. Discount rules
 
@@ -458,7 +491,7 @@ calculation.
     "method": "CASH"
   },
   "meta": {
-    "invoice_status": "UNPAID",
+    "invoice_status": "CONFIRMED",
     "amount_paid": "100.00",
     "balance_due": "230.00",
     "overdue": true
@@ -535,7 +568,7 @@ another customer's records in the frontend is not sufficient.
                                                                invoices          
   ------------------------------------------------------------------------------------------------
 
-Suggested portal invoice filters: `status`, `billing_period`.
+Suggested portal invoice filters: `status`, `period_start`.
 
 ## 10. Frontend mock checklist
 

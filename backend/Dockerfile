@@ -17,6 +17,9 @@ RUN npm ci
 
 COPY . .
 
+# Syncs node_modules with the lockfile on every start (see docker-entrypoint.sh).
+ENTRYPOINT ["sh", "./docker-entrypoint.sh"]
+
 EXPOSE 8000
 
 # --watch restarts the server when files change.
