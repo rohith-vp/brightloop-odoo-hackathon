@@ -68,6 +68,11 @@ The exact inclusive/exclusive timestamp convention should be consistent
 throughout the API and database. A recommended convention is a half-open
 interval: `[period_start, next_period_start)`.
 
+**Implementation decision:** every period is computed from the original
+anchor date, not from the previous period. An anchor of January 31 gives
+Jan 31, Feb 28, Mar 31, Apr 30, and never drifts to the 28th. Implemented
+in `packages/billing/src/periods.js`.
+
 ## 5. Invoice amount calculation
 
 For each eligible subscription and billing period:
@@ -209,6 +214,10 @@ demo scope.
     type.
 -   Round displayed and posted monetary amounts to the currency's minor
     unit (two decimal places for the examples in this document).
+-   **Implementation decision:** rounding is half up (ties go away from
+    zero) to two decimal places. For example, 0.005 rounds to 0.01 and
+    0.004 rounds to 0.00. Implemented in `packages/billing/src/money.js`.
+    Monetary values are held as integer cents internally.
 -   Use one consistent rounding rule in the billing service and tests.
 -   Calculate using unrounded intermediate decimal values where
     practical, then round the posted discount, tax, and total according
