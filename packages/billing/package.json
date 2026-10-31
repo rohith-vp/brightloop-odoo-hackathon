@@ -1,0 +1,11 @@
+{
+  "name": "@brightloop/billing",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Pure billing rules: money, tax, and billing period date math. No database or HTTP dependencies.",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "node --test"
+  }
+}
