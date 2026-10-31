@@ -1,0 +1,1 @@
+# brightloop-odoo-hackathon
