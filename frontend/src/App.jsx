@@ -1,7 +1,11 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout';
+import AuthLayout from './layouts/AuthLayout';
 import DashboardPage from './pages/DashboardPage';
+import LoginPage from './pages/LoginPage';
+import SignupPage from './pages/SignupPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
 
 function PlaceholderPage({ title, description }) {
   return (
@@ -57,6 +61,14 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Authentication Routes */}
+        <Route element={<AuthLayout />}>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        </Route>
+
+        {/* Protected Dashboard & Management Shell */}
         <Route path="/" element={<MainLayout />}>
           <Route index element={<DashboardPage />} />
           {/* Main Menu */}

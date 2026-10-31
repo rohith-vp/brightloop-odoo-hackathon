@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, Link } from 'react-router-dom';
 import {
   LayoutDashboard,
   Package,
@@ -245,17 +245,23 @@ export default function Sidebar({ isOpen, onClose }) {
           </div>
         </div>
 
-        <button
-          type="button"
-          title="Account options"
+        <Link
+          to="/login"
+          title="Sign out of Brightloop"
           style={{
             color: 'var(--color-text-secondary)',
-            padding: '4px',
+            padding: '5px',
             borderRadius: 'var(--radius-xs)',
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'color 0.15s ease',
           }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--status-overdue-text)')}
+          onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--color-text-secondary)')}
         >
-          <ChevronRight size={16} />
-        </button>
+          <LogOut size={15} />
+        </Link>
       </div>
     </aside>
   );
