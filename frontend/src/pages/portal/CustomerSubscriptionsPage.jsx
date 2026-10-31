@@ -13,12 +13,13 @@ import {
   Clock,
   Layers,
 } from 'lucide-react';
-import { authService } from '../../services/authService.js';
+import { useAuth } from '../../auth/AuthContext';
 import { subscriptionService } from '../../services/subscriptionService.js';
 import CustomerSubscriptionModal from '../../components/CustomerSubscriptionModal.jsx';
 
 export default function CustomerSubscriptionsPage() {
   const navigate = useNavigate();
+  const { uiUser } = useAuth();
   const [currentUser, setCurrentUser] = useState(null);
   const [subscriptions, setSubscriptions] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -26,7 +27,7 @@ export default function CustomerSubscriptionsPage() {
   const [selectedSubscription, setSelectedSubscription] = useState(null);
 
   const loadData = () => {
-    const user = authService.getCurrentUser();
+    const user = uiUser;
     if (!user) {
       navigate('/login');
       return;
@@ -52,7 +53,7 @@ export default function CustomerSubscriptionsPage() {
 
   if (!currentUser) return null;
 
-  const customerId = currentUser.customerId || 'cust_1';
+  const customerId = currentUser.customerId ?? null;
 
   // Filtered subscriptions
   const filteredSubscriptions = subscriptions.filter((sub) => {

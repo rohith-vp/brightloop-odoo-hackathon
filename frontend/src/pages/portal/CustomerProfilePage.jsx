@@ -11,11 +11,12 @@ import {
   Save,
   ShieldCheck,
 } from 'lucide-react';
-import { authService } from '../../services/authService.js';
+import { useAuth } from '../../auth/AuthContext';
 import { customerService } from '../../services/customerService.js';
 
 export default function CustomerProfilePage() {
   const navigate = useNavigate();
+  const { uiUser } = useAuth();
   const [currentUser, setCurrentUser] = useState(null);
   const [customer, setCustomer] = useState(null);
 
@@ -36,7 +37,7 @@ export default function CustomerProfilePage() {
   const [errorMessage, setErrorMessage] = useState('');
 
   const loadProfile = () => {
-    const user = authService.getCurrentUser();
+    const user = uiUser;
     if (!user) {
       navigate('/login');
       return;

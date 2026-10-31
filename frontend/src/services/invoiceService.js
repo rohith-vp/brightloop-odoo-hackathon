@@ -1,3 +1,4 @@
+import { session } from './session.js';
 /**
  * Invoices Mock Service Layer
  * Supports individual & batch invoice generation from active subscriptions,
@@ -538,12 +539,7 @@ class InvoiceService {
   /* ----------------- SESSION-DERIVED CUSTOMER ACCESS ----------------- */
 
   getAuthenticatedUser() {
-    try {
-      const stored = localStorage.getItem('brightloop_auth_user');
-      return stored ? JSON.parse(stored) : null;
-    } catch {
-      return null;
-    }
+    return session.get();
   }
 
   getMyInvoices() {

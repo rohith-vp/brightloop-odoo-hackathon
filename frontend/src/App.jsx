@@ -87,7 +87,7 @@ export default function App() {
         </Route>
 
         {/* Customer Portal Shell */}
-        <Route path="/portal" element={<CustomerLayout />}>
+        <Route path="/portal" element={<RequireAuth><CustomerLayout /></RequireAuth>}>
           <Route index element={<CustomerDashboardPage />} />
           <Route path="subscriptions" element={<CustomerSubscriptionsPage />} />
           <Route path="invoices" element={<CustomerInvoicesPage />} />

@@ -13,7 +13,6 @@ import {
   MapPin,
 } from 'lucide-react';
 import { settingsService } from '../services/settingsService';
-import { authService } from '../services/authService';
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('organization'); // 'organization' | 'billing' | 'subscriptions' | 'team'

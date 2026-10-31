@@ -14,7 +14,7 @@ import {
   Shield,
   Layers,
 } from 'lucide-react';
-import { authService } from '../../services/authService.js';
+import { useAuth } from '../../auth/AuthContext';
 import { subscriptionService } from '../../services/subscriptionService.js';
 import { invoiceService } from '../../services/invoiceService.js';
 import { paymentService } from '../../services/paymentService.js';
@@ -22,13 +22,14 @@ import { planService } from '../../services/planService.js';
 
 export default function CustomerDashboardPage() {
   const navigate = useNavigate();
+  const { uiUser } = useAuth();
   const [currentUser, setCurrentUser] = useState(null);
   const [subscriptions, setSubscriptions] = useState([]);
   const [invoices, setInvoices] = useState([]);
   const [payments, setPayments] = useState([]);
 
   useEffect(() => {
-    const user = authService.getCurrentUser();
+    const user = uiUser;
     if (!user) {
       navigate('/login');
       return;
@@ -113,7 +114,7 @@ export default function CustomerDashboardPage() {
               Account Portal
             </span>
             <span style={{ fontSize: 'var(--font-size-helper)', color: 'var(--color-text-secondary)' }}>
-              • ID: {currentUser.customerId || 'Demo Admin'}
+              • ID: {currentUser.customerId || currentUser.email}
             </span>
           </div>
           <h1

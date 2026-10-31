@@ -1,6 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { authApi, tokenStore, SESSION_EXPIRED_EVENT } from '../services/api';
+import { toUiUser } from './uiUser';
+import { session } from '../services/session';
 
 // Roles that may change products, variants, and plans. Matches the backend's WRITE_ROLES.
 const CATALOG_WRITE_ROLES = ['ADMIN', 'STAFF'];
@@ -52,15 +54,20 @@ export function AuthProvider({ children }) {
     return data.user;
   }, []);
 
+  const uiUser = useMemo(() => toUiUser(user), [user]);
+  // Set during render, so child pages that load data on mount already see the user.
+  session.set(uiUser);
+
   const value = useMemo(
     () => ({
       user,
+      uiUser,
       status,
       login,
       logout,
       canManageCatalog: CATALOG_WRITE_ROLES.includes(user?.role),
     }),
-    [user, status, login, logout],
+    [user, uiUser, status, login, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

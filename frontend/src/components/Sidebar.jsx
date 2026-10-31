@@ -17,7 +17,6 @@ import {
   X,
   LogOut,
 } from 'lucide-react';
-import { authService } from '../services/authService.js';
 
 const navigationGroups = [
   {
@@ -49,7 +48,7 @@ const navigationGroups = [
 ];
 
 export default function Sidebar({ isOpen, onClose }) {
-  const { logout } = useAuth();
+  const { logout, uiUser } = useAuth();
   const navigate = useNavigate();
 
   const signOut = () => {
@@ -225,7 +224,7 @@ export default function Sidebar({ isOpen, onClose }) {
               flexShrink: 0,
             }}
           >
-            {authService.getCurrentUser()?.avatar || 'SA'}
+            {uiUser?.avatar || 'SA'}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
             <span
@@ -238,7 +237,7 @@ export default function Sidebar({ isOpen, onClose }) {
                 textOverflow: 'ellipsis',
               }}
             >
-              {authService.getCurrentUser()?.name || 'System Admin'}
+              {uiUser?.name || 'System Admin'}
             </span>
             <span
               style={{
@@ -249,7 +248,7 @@ export default function Sidebar({ isOpen, onClose }) {
                 textOverflow: 'ellipsis',
               }}
             >
-              {authService.getCurrentUser()?.title || 'System Administrator'}
+              {uiUser?.title || 'System Administrator'}
             </span>
           </div>
         </div>

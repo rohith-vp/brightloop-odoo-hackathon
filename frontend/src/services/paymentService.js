@@ -1,3 +1,4 @@
+import { session } from './session.js';
 /**
  * Payments Mock Service Layer
  * Supports payment recording, partial payments, transaction reconciliation,
@@ -199,12 +200,7 @@ class PaymentService {
   /* ----------------- SESSION-DERIVED CUSTOMER ACCESS ----------------- */
 
   getAuthenticatedUser() {
-    try {
-      const stored = localStorage.getItem('brightloop_auth_user');
-      return stored ? JSON.parse(stored) : null;
-    } catch {
-      return null;
-    }
+    return session.get();
   }
 
   getMyPayments() {

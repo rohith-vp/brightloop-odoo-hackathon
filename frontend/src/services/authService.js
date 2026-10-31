@@ -1,3 +1,4 @@
+import { session } from './session.js';
 /**
  * Authentication & Role-Based Access Control Mock Service
  * Supports Admin, Staff, and Customer roles with localStorage persistence
@@ -124,19 +125,7 @@ class AuthService {
   }
 
   getCurrentUser() {
-    try {
-      const stored = localStorage.getItem(AUTH_STORAGE_KEY);
-      if (!stored) return null;
-      const user = JSON.parse(stored);
-      if (user && user.name === 'Rohith V P') {
-        user.name = 'System Admin';
-        user.avatar = 'SA';
-        localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
-      }
-      return user;
-    } catch {
-      return null;
-    }
+    return session.get();
   }
 
   setCurrentUser(user) {
