@@ -3,11 +3,25 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout';
 import AuthLayout from './layouts/AuthLayout';
 import DashboardPage from './pages/DashboardPage';
+import ProductsPage from './pages/ProductsPage';
+import PlansPage from './pages/PlansPage';
+import SubscriptionsPage from './pages/SubscriptionsPage';
+import QuotationsPage from './pages/QuotationsPage';
+import InvoicesPage from './pages/InvoicesPage';
+import PaymentsPage from './pages/PaymentsPage';
+import DiscountsPage from './pages/DiscountsPage';
+import CustomersPage from './pages/CustomersPage';
+import ReportsPage from './pages/ReportsPage';
+import SettingsPage from './pages/SettingsPage';
+import CustomerLayout from './layouts/CustomerLayout';
+import CustomerDashboardPage from './pages/portal/CustomerDashboardPage';
+import CustomerSubscriptionsPage from './pages/portal/CustomerSubscriptionsPage';
+import CustomerInvoicesPage from './pages/portal/CustomerInvoicesPage';
+import CustomerPaymentsPage from './pages/portal/CustomerPaymentsPage';
+import CustomerProfilePage from './pages/portal/CustomerProfilePage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
-import ProductsPage from './pages/ProductsPage';
-import PlansPage from './pages/PlansPage';
 import { AuthProvider, RequireAuth } from './auth/AuthContext';
 
 function PlaceholderPage({ title, description }) {
@@ -26,7 +40,7 @@ function PlaceholderPage({ title, description }) {
           borderRadius: 'var(--radius-xs)',
           backgroundColor: 'var(--color-surface-green)',
           color: 'var(--color-primary)',
-          fontSize: '11px',
+          fontSize: 'var(--font-size-badge)',
           fontWeight: 'var(--font-weight-semibold)',
           marginBottom: 'var(--space-3)',
           textTransform: 'uppercase',
@@ -37,7 +51,7 @@ function PlaceholderPage({ title, description }) {
       </div>
       <h1
         style={{
-          fontSize: 'var(--font-size-heading)',
+          fontSize: 'var(--font-size-heading-main)',
           fontWeight: 'var(--font-weight-semibold)',
           color: 'var(--color-secondary)',
           marginBottom: 'var(--space-2)',
@@ -63,13 +77,22 @@ function PlaceholderPage({ title, description }) {
 export default function App() {
   return (
     <AuthProvider>
-    <BrowserRouter>
-      <Routes>
+      <BrowserRouter>
+        <Routes>
         {/* Authentication Routes */}
         <Route element={<AuthLayout />}>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        </Route>
+
+        {/* Customer Portal Shell */}
+        <Route path="/portal" element={<CustomerLayout />}>
+          <Route index element={<CustomerDashboardPage />} />
+          <Route path="subscriptions" element={<CustomerSubscriptionsPage />} />
+          <Route path="invoices" element={<CustomerInvoicesPage />} />
+          <Route path="payments" element={<CustomerPaymentsPage />} />
+          <Route path="profile" element={<CustomerProfilePage />} />
         </Route>
 
         {/* Protected Dashboard & Management Shell */}
@@ -78,48 +101,24 @@ export default function App() {
           {/* Main Menu */}
           <Route path="products" element={<ProductsPage />} />
           <Route path="plans" element={<PlansPage />} />
-          <Route
-            path="subscriptions"
-            element={<PlaceholderPage title="Subscriptions" description="Manage customer subscription contracts, active renewals, upgrades, and cancellations." />}
-          />
+          <Route path="subscriptions" element={<SubscriptionsPage />} />
 
           {/* Finance */}
-          <Route
-            path="quotations"
-            element={<PlaceholderPage title="Quotations" description="Create, review, and dispatch commercial quotes and subscription estimates." />}
-          />
-          <Route
-            path="invoices"
-            element={<PlaceholderPage title="Invoices" description="Automated billing invoices, tax breakdowns, overdue notices, and receipt generation." />}
-          />
-          <Route
-            path="payments"
-            element={<PlaceholderPage title="Payments" description="Payment gateway collection records, UPI mandate settlements, and transaction reconciliations." />}
-          />
-          <Route
-            path="discounts"
-            element={<PlaceholderPage title="Discounts" description="Promotional coupons, customer-specific concession rules, and seasonal discount campaigns." />}
-          />
+          <Route path="quotations" element={<QuotationsPage />} />
+          <Route path="invoices" element={<InvoicesPage />} />
+          <Route path="payments" element={<PaymentsPage />} />
+          <Route path="discounts" element={<DiscountsPage />} />
 
           {/* Management */}
-          <Route
-            path="customers"
-            element={<PlaceholderPage title="Customers" description="Customer directory, account contacts, billing details, and subscription histories." />}
-          />
-          <Route
-            path="reports"
-            element={<PlaceholderPage title="Reports" description="Financial analytics, churn modeling, cohort retention, and MRR growth tracking." />}
-          />
-          <Route
-            path="settings"
-            element={<PlaceholderPage title="Settings" description="System configurations, webhook endpoints, payment gateway keys, and organization profiles." />}
-          />
+          <Route path="customers" element={<CustomersPage />} />
+          <Route path="reports" element={<ReportsPage />} />
+          <Route path="settings" element={<SettingsPage />} />
 
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
-      </Routes>
-    </BrowserRouter>
+        </Routes>
+      </BrowserRouter>
     </AuthProvider>
   );
 }

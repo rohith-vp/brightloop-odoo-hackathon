@@ -15,9 +15,9 @@ import {
   Settings,
   Search,
   X,
-  ChevronRight,
   LogOut,
 } from 'lucide-react';
+import { authService } from '../services/authService.js';
 
 const navigationGroups = [
   {
@@ -49,7 +49,7 @@ const navigationGroups = [
 ];
 
 export default function Sidebar({ isOpen, onClose }) {
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
   const navigate = useNavigate();
 
   const signOut = () => {
@@ -75,8 +75,8 @@ export default function Sidebar({ isOpen, onClose }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
           <div
             style={{
-              width: '28px',
-              height: '28px',
+              width: '32px',
+              height: '32px',
               borderRadius: 'var(--radius-sm)',
               backgroundColor: 'var(--color-primary)',
               display: 'flex',
@@ -84,7 +84,7 @@ export default function Sidebar({ isOpen, onClose }) {
               justifyContent: 'center',
               color: 'var(--color-text-inverse)',
               fontWeight: 'var(--font-weight-bold)',
-              fontSize: '14px',
+              fontSize: '15px',
             }}
           >
             B
@@ -92,7 +92,7 @@ export default function Sidebar({ isOpen, onClose }) {
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <span
               style={{
-                fontSize: '15px',
+                fontSize: '17px',
                 fontWeight: 'var(--font-weight-bold)',
                 letterSpacing: '-0.02em',
                 color: 'var(--color-secondary)',
@@ -103,7 +103,7 @@ export default function Sidebar({ isOpen, onClose }) {
             </span>
             <span
               style={{
-                fontSize: '10px',
+                fontSize: '11px',
                 fontWeight: 'var(--font-weight-medium)',
                 color: 'var(--color-text-secondary)',
                 letterSpacing: '0.04em',
@@ -132,15 +132,15 @@ export default function Sidebar({ isOpen, onClose }) {
 
       {/* Sidebar Search Field */}
       <div style={{ padding: 'var(--space-3) var(--space-4) var(--space-2)' }}>
-        <div className="search-input-wrapper" style={{ padding: '5px 8px' }}>
-          <Search size={14} style={{ color: 'var(--color-text-secondary)' }} />
+        <div className="search-input-wrapper" style={{ padding: '6px 10px', minHeight: '38px' }}>
+          <Search size={15} style={{ color: 'var(--color-text-secondary)' }} />
           <input
             type="text"
             className="search-input"
             placeholder="Search menu..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            style={{ fontSize: '12px' }}
+            style={{ fontSize: 'var(--font-size-helper)' }}
           />
         </div>
       </div>
@@ -164,10 +164,10 @@ export default function Sidebar({ isOpen, onClose }) {
           if (filteredItems.length === 0) return null;
 
           return (
-            <div key={group.title} style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+            <div key={group.title} style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
               <div
                 style={{
-                  fontSize: '11px',
+                  fontSize: 'var(--font-size-section-label)',
                   fontWeight: 'var(--font-weight-semibold)',
                   color: 'var(--color-text-secondary)',
                   letterSpacing: '0.05em',
@@ -188,7 +188,7 @@ export default function Sidebar({ isOpen, onClose }) {
                       `nav-link-item ${isActive ? 'active' : ''}`
                     }
                   >
-                    <IconComponent size={16} />
+                    <IconComponent size={18} />
                     <span style={{ flex: 1 }}>{item.label}</span>
                   </NavLink>
                 );
@@ -212,25 +212,25 @@ export default function Sidebar({ isOpen, onClose }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', minWidth: 0 }}>
           <div
             style={{
-              width: '32px',
-              height: '32px',
+              width: '34px',
+              height: '34px',
               borderRadius: '50%',
               backgroundColor: 'var(--color-surface-green)',
               color: 'var(--color-primary)',
               fontWeight: 'var(--font-weight-semibold)',
-              fontSize: '12px',
+              fontSize: '13px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               flexShrink: 0,
             }}
           >
-            RV
+            {authService.getCurrentUser()?.avatar || 'SA'}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
             <span
               style={{
-                fontSize: '13px',
+                fontSize: '14px',
                 fontWeight: 'var(--font-weight-semibold)',
                 color: 'var(--color-text-main)',
                 whiteSpace: 'nowrap',
@@ -238,18 +238,18 @@ export default function Sidebar({ isOpen, onClose }) {
                 textOverflow: 'ellipsis',
               }}
             >
-              Rohith V P
+              {authService.getCurrentUser()?.name || 'System Admin'}
             </span>
             <span
               style={{
-                fontSize: '11px',
+                fontSize: '12px',
                 color: 'var(--color-text-secondary)',
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
               }}
             >
-              {user?.name ?? 'Billing Admin'}
+              {authService.getCurrentUser()?.title || 'System Administrator'}
             </span>
           </div>
         </div>
@@ -260,7 +260,7 @@ export default function Sidebar({ isOpen, onClose }) {
           title="Sign out of Brightloop"
           style={{
             color: 'var(--color-text-secondary)',
-            padding: '5px',
+            padding: '6px',
             borderRadius: 'var(--radius-xs)',
             display: 'inline-flex',
             alignItems: 'center',
@@ -270,7 +270,7 @@ export default function Sidebar({ isOpen, onClose }) {
           onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--status-overdue-text)')}
           onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--color-text-secondary)')}
         >
-          <LogOut size={15} />
+          <LogOut size={17} />
         </button>
       </div>
     </aside>

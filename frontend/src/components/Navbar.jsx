@@ -1,5 +1,5 @@
 import React from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Menu,
   Search,
@@ -7,7 +7,10 @@ import {
   MessageSquare,
   HelpCircle,
   ChevronDown,
+  ExternalLink,
+  LogOut,
 } from 'lucide-react';
+import { authService } from '../services/authService.js';
 
 const routeTitleMap = {
   '/': 'Overview',
@@ -25,7 +28,9 @@ const routeTitleMap = {
 
 export default function Navbar({ onToggleSidebar }) {
   const location = useLocation();
+  const navigate = useNavigate();
   const currentTitle = routeTitleMap[location.pathname] || 'Dashboard';
+  const currentUser = authService.getCurrentUser() || { name: 'Admin', avatar: 'RV' };
 
   return (
     <header className="layout-navbar">
@@ -37,24 +42,24 @@ export default function Navbar({ onToggleSidebar }) {
           aria-label="Toggle navigation menu"
           className="mobile-nav-toggle btn-icon"
         >
-          <Menu size={18} />
+          <Menu size={20} />
         </button>
 
         {/* Clean Fintech Breadcrumbs */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span
             style={{
-              fontSize: 'var(--font-size-body)',
+              fontSize: 'var(--font-size-navbar)',
               color: 'var(--color-text-secondary)',
               fontWeight: 'var(--font-weight-regular)',
             }}
           >
             Dashboard
           </span>
-          <span style={{ color: 'var(--color-text-secondary)', fontSize: '11px' }}>/</span>
+          <span style={{ color: 'var(--color-text-secondary)', fontSize: '13px' }}>/</span>
           <span
             style={{
-              fontSize: 'var(--font-size-body)',
+              fontSize: 'var(--font-size-navbar)',
               color: 'var(--color-text-main)',
               fontWeight: 'var(--font-weight-semibold)',
             }}
@@ -69,18 +74,19 @@ export default function Navbar({ onToggleSidebar }) {
         style={{
           display: 'none',
           alignItems: 'center',
-          maxWidth: '360px',
+          maxWidth: '380px',
           width: '100%',
           margin: '0 var(--space-4)',
         }}
         className="navbar-search-desktop"
       >
-        <div className="search-input-wrapper" style={{ width: '100%' }}>
-          <Search size={15} style={{ color: 'var(--color-text-secondary)' }} />
+        <div className="search-input-wrapper" style={{ width: '100%', minHeight: '38px', padding: '6px 12px' }}>
+          <Search size={16} style={{ color: 'var(--color-text-secondary)' }} />
           <input
             type="text"
             className="search-input"
             placeholder="Search subscriptions, invoices, customers..."
+            style={{ fontSize: '14px' }}
           />
         </div>
       </div>
@@ -93,7 +99,7 @@ export default function Navbar({ onToggleSidebar }) {
           title="Help & Documentation"
           aria-label="Help"
         >
-          <HelpCircle size={17} />
+          <HelpCircle size={18} />
         </button>
 
         <button
@@ -102,7 +108,7 @@ export default function Navbar({ onToggleSidebar }) {
           title="Messages"
           aria-label="Messages"
         >
-          <MessageSquare size={17} />
+          <MessageSquare size={18} />
         </button>
 
         <button
@@ -112,15 +118,15 @@ export default function Navbar({ onToggleSidebar }) {
           aria-label="Notifications"
           style={{ position: 'relative' }}
         >
-          <Bell size={17} />
+          <Bell size={18} />
           {/* Subtle emerald notification dot */}
           <span
             style={{
               position: 'absolute',
               top: '7px',
               right: '7px',
-              width: '6px',
-              height: '6px',
+              width: '7px',
+              height: '7px',
               borderRadius: '50%',
               backgroundColor: 'var(--color-primary)',
             }}
@@ -129,55 +135,63 @@ export default function Navbar({ onToggleSidebar }) {
 
         <div
           style={{
-            height: '22px',
+            height: '24px',
             width: '1px',
             backgroundColor: 'var(--color-border)',
-            margin: '0 var(--space-1)',
+            margin: '0 var(--space-2)',
           }}
         />
 
-        {/* User Profile Pill / Dropdown */}
+        {/* Customer Portal Quick Link for Evaluators */}
         <button
           type="button"
+          onClick={() => navigate('/portal')}
+          className="btn btn-secondary"
+          title="Open Customer Portal View"
           style={{
-            display: 'flex',
+            fontSize: '12px',
+            padding: '4px 10px',
+            display: 'inline-flex',
             alignItems: 'center',
-            gap: '8px',
-            padding: '4px 6px',
-            borderRadius: 'var(--radius-sm)',
-            transition: 'background-color 0.15s ease',
+            gap: '4px',
+            color: 'var(--color-primary)',
           }}
-          className="user-profile-trigger"
         >
+          <span>Customer Portal</span>
+          <ExternalLink size={13} />
+        </button>
+
+        {/* User Profile Pill */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <div
             style={{
-              width: '28px',
-              height: '28px',
+              width: '32px',
+              height: '32px',
               borderRadius: '50%',
               backgroundColor: 'var(--color-surface-green)',
               color: 'var(--color-primary)',
               fontWeight: 'var(--font-weight-semibold)',
-              fontSize: '11px',
+              fontSize: '13px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
             }}
           >
-            RV
+            {currentUser.avatar || 'RV'}
           </div>
-          <span
-            style={{
-              fontSize: '13px',
-              fontWeight: 'var(--font-weight-medium)',
-              color: 'var(--color-text-main)',
-              display: 'none',
+          <button
+            type="button"
+            onClick={() => {
+              authService.logout();
+              navigate('/login');
             }}
-            className="navbar-username"
+            className="btn-icon"
+            title="Sign out of admin console"
+            style={{ color: 'var(--color-text-secondary)', padding: '6px' }}
           >
-            Rohith V P
-          </span>
-          <ChevronDown size={14} style={{ color: 'var(--color-text-secondary)' }} />
-        </button>
+            <LogOut size={16} />
+          </button>
+        </div>
       </div>
     </header>
   );
