@@ -1,3 +1,4 @@
+import { session } from './session.js';
 /**
  * Subscriptions Mock Service Layer
  * Supports lifecycle states (Draft, Quotation, Confirmed, Active, Paused, Closed),
@@ -1053,12 +1054,7 @@ class SubscriptionService {
   /* ----------------- SESSION-DERIVED CUSTOMER ACCESS ----------------- */
 
   getAuthenticatedUser() {
-    try {
-      const stored = localStorage.getItem('brightloop_auth_user');
-      return stored ? JSON.parse(stored) : null;
-    } catch {
-      return null;
-    }
+    return session.get();
   }
 
   getMySubscriptions() {

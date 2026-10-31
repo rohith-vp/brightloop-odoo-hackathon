@@ -13,7 +13,8 @@ import {
   ShieldCheck,
   Building2,
 } from 'lucide-react';
-import { authService, USER_ROLES } from '../services/authService.js';
+import { useAuth } from '../auth/AuthContext';
+import { UI_ROLES } from '../auth/uiUser';
 import { customerService } from '../services/customerService.js';
 
 export default function CustomerLayout() {
@@ -23,10 +24,17 @@ export default function CustomerLayout() {
   const [customerRecord, setCustomerRecord] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  const { uiUser, logout } = useAuth();
+
   useEffect(() => {
-    const user = authService.getCurrentUser();
+    const user = uiUser;
     if (!user) {
       navigate('/login');
+      return;
+    }
+    if (user.role !== UI_ROLES.CUSTOMER) {
+      // Staff and admins belong in the console, not the portal.
+      navigate('/');
       return;
     }
     setCurrentUser(user);
@@ -36,10 +44,10 @@ export default function CustomerLayout() {
       const cust = customerService.getCustomerById(user.customerId);
       setCustomerRecord(cust);
     }
-  }, [navigate]);
+  }, [navigate, uiUser]);
 
   const handleLogout = () => {
-    authService.logout();
+    logout();
     navigate('/login');
   };
 
@@ -53,7 +61,7 @@ export default function CustomerLayout() {
 
   if (!currentUser) return null;
 
-  const isAdminViewing = currentUser.role === USER_ROLES.ADMIN || currentUser.role === USER_ROLES.STAFF;
+  const isAdminViewing = currentUser.role === UI_ROLES.ADMIN || currentUser.role === UI_ROLES.STAFF;
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--color-background)' }}>

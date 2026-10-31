@@ -10,7 +10,7 @@ import {
   ExternalLink,
   LogOut,
 } from 'lucide-react';
-import { authService } from '../services/authService.js';
+import { useAuth } from '../auth/AuthContext';
 
 const routeTitleMap = {
   '/': 'Overview',
@@ -30,7 +30,8 @@ export default function Navbar({ onToggleSidebar }) {
   const location = useLocation();
   const navigate = useNavigate();
   const currentTitle = routeTitleMap[location.pathname] || 'Dashboard';
-  const currentUser = authService.getCurrentUser() || { name: 'Admin', avatar: 'RV' };
+  const { logout, uiUser } = useAuth();
+  const currentUser = uiUser || { name: 'Admin', avatar: 'RV' };
 
   return (
     <header className="layout-navbar">
@@ -182,7 +183,7 @@ export default function Navbar({ onToggleSidebar }) {
           <button
             type="button"
             onClick={() => {
-              authService.logout();
+              logout();
               navigate('/login');
             }}
             className="btn-icon"

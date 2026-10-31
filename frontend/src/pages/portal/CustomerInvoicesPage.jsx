@@ -11,12 +11,13 @@ import {
   CheckCircle2,
   Wallet,
 } from 'lucide-react';
-import { authService } from '../../services/authService.js';
+import { useAuth } from '../../auth/AuthContext';
 import { invoiceService } from '../../services/invoiceService.js';
 import CustomerInvoiceModal from '../../components/CustomerInvoiceModal.jsx';
 
 export default function CustomerInvoicesPage() {
   const navigate = useNavigate();
+  const { uiUser } = useAuth();
   const [currentUser, setCurrentUser] = useState(null);
   const [invoices, setInvoices] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -24,7 +25,7 @@ export default function CustomerInvoicesPage() {
   const [viewingInvoice, setViewingInvoice] = useState(null);
 
   const loadData = () => {
-    const user = authService.getCurrentUser();
+    const user = uiUser;
     if (!user) {
       navigate('/login');
       return;

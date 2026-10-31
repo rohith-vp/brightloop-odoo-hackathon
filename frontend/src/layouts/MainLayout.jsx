@@ -2,21 +2,23 @@ import React, { useState, useEffect } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Sidebar from '../components/Sidebar';
-import { authService, USER_ROLES } from '../services/authService.js';
+import { useAuth } from '../auth/AuthContext';
+import { UI_ROLES } from '../auth/uiUser';
 
 export default function MainLayout() {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  const { uiUser } = useAuth();
+
   useEffect(() => {
-    const user = authService.getCurrentUser();
-    if (!user) {
+    if (!uiUser) {
       navigate('/login');
-    } else if (user.role === USER_ROLES.CUSTOMER) {
-      // Strictly prevent customers from accessing admin / staff console
+    } else if (uiUser.role === UI_ROLES.CUSTOMER) {
+      // Customers never see the admin and staff console.
       navigate('/portal');
     }
-  }, [navigate]);
+  }, [navigate, uiUser]);
 
   const toggleSidebar = () => {
     setSidebarOpen((prev) => !prev);

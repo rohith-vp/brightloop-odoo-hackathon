@@ -9,12 +9,13 @@ import {
   Receipt,
   Filter,
 } from 'lucide-react';
-import { authService } from '../../services/authService.js';
+import { useAuth } from '../../auth/AuthContext';
 import { paymentService } from '../../services/paymentService.js';
 import CustomerPaymentReceiptModal from '../../components/CustomerPaymentReceiptModal.jsx';
 
 export default function CustomerPaymentsPage() {
   const navigate = useNavigate();
+  const { uiUser } = useAuth();
   const [currentUser, setCurrentUser] = useState(null);
   const [payments, setPayments] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -22,7 +23,7 @@ export default function CustomerPaymentsPage() {
   const [viewingPayment, setViewingPayment] = useState(null);
 
   const loadData = () => {
-    const user = authService.getCurrentUser();
+    const user = uiUser;
     if (!user) {
       navigate('/login');
       return;

@@ -1,9 +1,26 @@
+import { session } from './session.js';
 /**
  * Customers Mock Service Layer
  * Centralized customer directory for Brightloop Quotations and Subscriptions.
  */
 
 const STORAGE_KEY = 'brightloop_customers_data';
+
+// Profile shape for a signed-in account that has no customer record yet.
+function accountProfile(user) {
+  return {
+    id: user.id,
+    name: user.name,
+    contactPerson: user.name,
+    email: user.email,
+    phone: '',
+    company: '',
+    gstin: '',
+    billingAddress: { street: '', city: '', state: '', postalCode: '', country: '' },
+    status: 'active',
+    createdAt: null,
+  };
+}
 
 const INITIAL_CUSTOMERS = [
   {
@@ -217,12 +234,7 @@ class CustomerService {
   }
 
   getAuthenticatedUser() {
-    try {
-      const stored = localStorage.getItem('brightloop_auth_user');
-      return stored ? JSON.parse(stored) : null;
-    } catch {
-      return null;
-    }
+    return session.get();
   }
 
   getAuthenticatedCustomerId() {
@@ -238,9 +250,9 @@ class CustomerService {
       const fallbackId = user.customerId || 'CUST001';
       return this.getCustomerById(fallbackId);
     }
-    const customer = this.getCustomerById(user.customerId);
-    if (!customer) throw new Error('Customer profile not found.');
-    return customer;
+    // A real account is not linked to a customer record yet. Show the account's own details.
+    const customer = user.customerId ? this.getCustomerById(user.customerId) : null;
+    return customer ?? accountProfile(user);
   }
 
   updateMyProfile(permittedData = {}) {
@@ -248,6 +260,12 @@ class CustomerService {
     if (!user) throw new Error('Unauthorized: No active session.');
     if (user.role !== 'customer') {
       throw new Error('Access denied: Only customer accounts can update their customer profile through this endpoint.');
+    }
+
+    // A real account has no customer record yet, so there is nothing to update.
+    // Writing with a missing ID would create a stray record in the shared store.
+    if (!user.customerId) {
+      throw new Error('Profile changes are not available for this account yet.');
     }
 
     // Security: Disallow tampering with ID, role, or email
