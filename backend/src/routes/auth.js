@@ -64,7 +64,7 @@ export function authRouter({ db, jwtSecret, jwtExpiresMinutes = 60 }) {
 
     const expiresIn = jwtExpiresMinutes * 60;
     const accessToken = jwt.sign({ role: user.role }, jwtSecret, {
-      subject: user.id,
+      subject: String(user.id),
       expiresIn,
       algorithm: 'HS256',
     });

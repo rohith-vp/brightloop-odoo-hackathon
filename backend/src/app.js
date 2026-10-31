@@ -1,3 +1,4 @@
+import { subscriptionsRouter } from './routes/subscriptions.js';
 import express from 'express';
 import cors from 'cors';
 import { healthRouter } from './routes/health.js';
@@ -7,6 +8,7 @@ import { productsRouter } from './routes/products.js';
 import { variantsRouter } from './routes/variants.js';
 import { plansRouter } from './routes/plans.js';
 import { ApiError, translateDbError } from './errors.js';
+import { invoicesRouter } from './routes/invoice.js';
 
 // Default authentication: attaches no user, so protected routes return 401.
 // index.js passes the JWT authenticator in.
@@ -35,6 +37,8 @@ export function createApp({
   app.use('/api/users', usersRouter({ db }));
   app.use('/api/products', productsRouter({ db }));
   app.use('/api/plans', plansRouter({ db }));
+  app.use('/api/subscriptions', subscriptionsRouter({ db }));
+  app.use('/api/invoices', invoicesRouter({ db }));
   app.use('/api', variantsRouter({ db }));
 
   // Unknown routes return the same error shape as the rest of the API.
