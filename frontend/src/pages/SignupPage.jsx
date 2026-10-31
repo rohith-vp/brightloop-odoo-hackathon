@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import PasswordInput from '../components/PasswordInput';
 import { Loader2, AlertCircle, CheckCircle2, Check } from 'lucide-react';
+import { authApi, ApiError } from '../services/api';
+import { validateSignup, hasErrors, PASSWORD_RULES } from '../lib/validation';
+import { Notice } from '../components/forms';
 
 export default function SignupPage() {
   const navigate = useNavigate();
@@ -16,60 +19,20 @@ export default function SignupPage() {
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [signupSuccess, setSignupSuccess] = useState(false);
+  const [formError, setFormError] = useState('');
 
-  // Dynamic password criteria validation
-  const passwordCriteria = [
-    {
-      id: 'length',
-      label: 'Minimum 8 characters',
-      valid: formData.password.length >= 8,
-    },
-    {
-      id: 'uppercase',
-      label: 'At least one uppercase letter (A-Z)',
-      valid: /[A-Z]/.test(formData.password),
-    },
-    {
-      id: 'lowercase',
-      label: 'At least one lowercase letter (a-z)',
-      valid: /[a-z]/.test(formData.password),
-    },
-    {
-      id: 'special',
-      label: 'At least one special character (!@#$%^&*)',
-      valid: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(formData.password),
-    },
-  ];
+  // Live password checklist. The rules are shared with the backend's rules via lib/validation.js.
+  const passwordCriteria = PASSWORD_RULES.map((rule) => ({
+    id: rule.id,
+    label: rule.label,
+    valid: rule.test(formData.password),
+  }));
 
-  const allCriteriaMet = passwordCriteria.every((c) => c.valid);
 
   const validate = () => {
-    const newErrors = {};
-
-    if (!formData.fullName.trim()) {
-      newErrors.fullName = 'Full name is required';
-    }
-
-    if (!formData.email.trim()) {
-      newErrors.email = 'Work email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
-      newErrors.email = 'Please enter a valid work email address';
-    }
-
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-    } else if (!allCriteriaMet) {
-      newErrors.password = 'Please satisfy all password criteria';
-    }
-
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'Confirm your password';
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
-    }
-
+    const newErrors = validateSignup(formData);
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return !hasErrors(newErrors);
   };
 
   const handleChange = (e) => {
@@ -84,23 +47,42 @@ export default function SignupPage() {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!validate()) return;
 
+    setFormError('');
     setIsLoading(true);
-
-    // Simulated registration
-    setTimeout(() => {
+    try {
+      await authApi.signup({
+        name: formData.fullName.trim(),
+        email: formData.email.trim(),
+        password: formData.password,
+      });
       setIsLoading(false);
       setSignupSuccess(true);
-
-      // Redirect after showing success feedback
       setTimeout(() => {
-        navigate('/login');
+        navigate('/login', {
+          replace: true,
+          state: { notice: 'Your account is ready. Sign in to continue.' },
+        });
       }, 1200);
-    }, 850);
+    } catch (err) {
+      setIsLoading(false);
+      if (err instanceof ApiError && err.status === 422) {
+        // Map server field names onto the form's field names.
+        setErrors({
+          fullName: err.details.name,
+          email: err.details.email,
+          password: err.details.password,
+        });
+      } else if (err instanceof ApiError && err.status === 409) {
+        setErrors((prev) => ({ ...prev, email: 'An account with this email already exists' }));
+      } else {
+        setFormError(err.message);
+      }
+    }
   };
 
   return (
@@ -109,10 +91,10 @@ export default function SignupPage() {
       <div style={{ marginBottom: 'var(--space-6)', textAlign: 'left' }}>
         <h1
           style={{
-            fontSize: 'var(--font-size-heading-main)',
+            fontSize: 'var(--font-size-heading)',
             fontWeight: 'var(--font-weight-semibold)',
             color: 'var(--color-secondary)',
-            marginBottom: '6px',
+            marginBottom: '4px',
             letterSpacing: '-0.02em',
           }}
         >
@@ -129,7 +111,7 @@ export default function SignupPage() {
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
-            padding: '12px 14px',
+            padding: '10px 12px',
             borderRadius: 'var(--radius-sm)',
             backgroundColor: 'var(--status-success-bg)',
             color: 'var(--status-success-text)',
@@ -137,8 +119,14 @@ export default function SignupPage() {
             marginBottom: 'var(--space-4)',
           }}
         >
-          <CheckCircle2 size={18} />
+          <CheckCircle2 size={16} />
           <span>Account created successfully! Redirecting to sign in...</span>
+        </div>
+      )}
+
+      {formError && (
+        <div style={{ marginBottom: 'var(--space-4)' }}>
+          <Notice>{formError}</Notice>
         </div>
       )}
 
@@ -149,7 +137,7 @@ export default function SignupPage() {
             htmlFor="fullName"
             style={{
               display: 'block',
-              fontSize: 'var(--font-size-form-label)',
+              fontSize: '13px',
               fontWeight: 'var(--font-weight-medium)',
               color: 'var(--color-text-main)',
               marginBottom: '6px',
@@ -164,13 +152,12 @@ export default function SignupPage() {
             autoComplete="name"
             value={formData.fullName}
             onChange={handleChange}
-            placeholder="Alex Morgan"
+            placeholder="Rohith V P"
             disabled={isLoading || signupSuccess}
             style={{
               width: '100%',
-              height: '46px',
-              padding: '10px 14px',
-              fontSize: 'var(--font-size-input)',
+              padding: '9px 12px',
+              fontSize: 'var(--font-size-body)',
               color: 'var(--color-text-main)',
               backgroundColor: 'var(--color-surface)',
               border: `1px solid ${errors.fullName ? 'var(--status-overdue-text)' : 'var(--color-border)'}`,
@@ -193,13 +180,13 @@ export default function SignupPage() {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '5px',
+                gap: '4px',
                 color: 'var(--status-overdue-text)',
-                fontSize: 'var(--font-size-helper)',
-                marginTop: '5px',
+                fontSize: '12px',
+                marginTop: '4px',
               }}
             >
-              <AlertCircle size={14} />
+              <AlertCircle size={13} />
               <span>{errors.fullName}</span>
             </div>
           )}
@@ -211,7 +198,7 @@ export default function SignupPage() {
             htmlFor="email"
             style={{
               display: 'block',
-              fontSize: 'var(--font-size-form-label)',
+              fontSize: '13px',
               fontWeight: 'var(--font-weight-medium)',
               color: 'var(--color-text-main)',
               marginBottom: '6px',
@@ -226,13 +213,12 @@ export default function SignupPage() {
             autoComplete="email"
             value={formData.email}
             onChange={handleChange}
-            placeholder="alex@company.com"
+            placeholder="rohith@company.com"
             disabled={isLoading || signupSuccess}
             style={{
               width: '100%',
-              height: '46px',
-              padding: '10px 14px',
-              fontSize: 'var(--font-size-input)',
+              padding: '9px 12px',
+              fontSize: 'var(--font-size-body)',
               color: 'var(--color-text-main)',
               backgroundColor: 'var(--color-surface)',
               border: `1px solid ${errors.email ? 'var(--status-overdue-text)' : 'var(--color-border)'}`,
@@ -255,13 +241,13 @@ export default function SignupPage() {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '5px',
+                gap: '4px',
                 color: 'var(--status-overdue-text)',
-                fontSize: 'var(--font-size-helper)',
-                marginTop: '5px',
+                fontSize: '12px',
+                marginTop: '4px',
               }}
             >
-              <AlertCircle size={14} />
+              <AlertCircle size={13} />
               <span>{errors.email}</span>
             </div>
           )}
@@ -273,7 +259,7 @@ export default function SignupPage() {
             htmlFor="password"
             style={{
               display: 'block',
-              fontSize: 'var(--font-size-form-label)',
+              fontSize: '13px',
               fontWeight: 'var(--font-weight-medium)',
               color: 'var(--color-text-main)',
               marginBottom: '6px',
@@ -296,13 +282,13 @@ export default function SignupPage() {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '5px',
+                gap: '4px',
                 color: 'var(--status-overdue-text)',
-                fontSize: 'var(--font-size-helper)',
-                marginTop: '5px',
+                fontSize: '12px',
+                marginTop: '4px',
               }}
             >
-              <AlertCircle size={14} />
+              <AlertCircle size={13} />
               <span>{errors.password}</span>
             </div>
           )}
@@ -311,18 +297,18 @@ export default function SignupPage() {
           <div
             style={{
               marginTop: 'var(--space-3)',
-              padding: '12px 14px',
+              padding: '10px 12px',
               backgroundColor: '#FAFCFB',
               border: '1px solid var(--color-border)',
               borderRadius: 'var(--radius-sm)',
               display: 'flex',
               flexDirection: 'column',
-              gap: '7px',
+              gap: '6px',
             }}
           >
             <span
               style={{
-                fontSize: '12px',
+                fontSize: '11px',
                 fontWeight: 'var(--font-weight-semibold)',
                 color: 'var(--color-text-secondary)',
                 letterSpacing: '0.03em',
@@ -338,15 +324,15 @@ export default function SignupPage() {
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '8px',
-                  fontSize: 'var(--font-size-helper)',
+                  gap: '6px',
+                  fontSize: '12px',
                   color: c.valid ? 'var(--color-primary)' : 'var(--color-text-secondary)',
                   fontWeight: c.valid ? 'var(--font-weight-medium)' : 'var(--font-weight-regular)',
                   transition: 'color 0.15s ease',
                 }}
               >
                 {c.valid ? (
-                  <Check size={16} style={{ color: 'var(--color-primary)', strokeWidth: 2.5 }} />
+                  <Check size={14} style={{ color: 'var(--color-primary)', strokeWidth: 2.5 }} />
                 ) : (
                   <span
                     style={{
@@ -354,7 +340,7 @@ export default function SignupPage() {
                       height: '6px',
                       borderRadius: '50%',
                       backgroundColor: 'var(--color-border)',
-                      margin: '0 5px',
+                      margin: '0 4px',
                       display: 'inline-block',
                     }}
                   />
@@ -371,7 +357,7 @@ export default function SignupPage() {
             htmlFor="confirmPassword"
             style={{
               display: 'block',
-              fontSize: 'var(--font-size-form-label)',
+              fontSize: '13px',
               fontWeight: 'var(--font-weight-medium)',
               color: 'var(--color-text-main)',
               marginBottom: '6px',
@@ -394,13 +380,13 @@ export default function SignupPage() {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '5px',
+                gap: '4px',
                 color: 'var(--status-overdue-text)',
-                fontSize: 'var(--font-size-helper)',
-                marginTop: '5px',
+                fontSize: '12px',
+                marginTop: '4px',
               }}
             >
-              <AlertCircle size={14} />
+              <AlertCircle size={13} />
               <span>{errors.confirmPassword}</span>
             </div>
           )}
@@ -413,9 +399,8 @@ export default function SignupPage() {
           disabled={isLoading || signupSuccess}
           style={{
             width: '100%',
-            height: '46px',
             padding: '10px 16px',
-            fontSize: 'var(--font-size-button)',
+            fontSize: '14px',
             fontWeight: 'var(--font-weight-semibold)',
             marginTop: 'var(--space-2)',
             display: 'flex',
@@ -424,7 +409,7 @@ export default function SignupPage() {
             gap: '8px',
           }}
         >
-          {isLoading && <Loader2 size={18} className="spin-loader" />}
+          {isLoading && <Loader2 size={16} className="spin-loader" />}
           <span>{isLoading ? 'Creating account...' : 'Create Brightloop account'}</span>
         </button>
       </form>
@@ -436,7 +421,7 @@ export default function SignupPage() {
           paddingTop: 'var(--space-4)',
           borderTop: '1px solid var(--color-border)',
           textAlign: 'center',
-          fontSize: 'var(--font-size-body)',
+          fontSize: '13px',
           color: 'var(--color-text-secondary)',
         }}
       >
@@ -454,3 +439,4 @@ export default function SignupPage() {
     </div>
   );
 }
+

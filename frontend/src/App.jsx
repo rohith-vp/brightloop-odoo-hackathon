@@ -22,6 +22,7 @@ import CustomerProfilePage from './pages/portal/CustomerProfilePage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import { AuthProvider, RequireAuth } from './auth/AuthContext';
 
 function PlaceholderPage({ title, description }) {
   return (
@@ -75,8 +76,9 @@ function PlaceholderPage({ title, description }) {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
         {/* Authentication Routes */}
         <Route element={<AuthLayout />}>
           <Route path="/login" element={<LoginPage />} />
@@ -94,7 +96,7 @@ export default function App() {
         </Route>
 
         {/* Protected Dashboard & Management Shell */}
-        <Route path="/" element={<MainLayout />}>
+        <Route path="/" element={<RequireAuth><MainLayout /></RequireAuth>}>
           <Route index element={<DashboardPage />} />
           {/* Main Menu */}
           <Route path="products" element={<ProductsPage />} />
@@ -115,7 +117,8 @@ export default function App() {
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
-      </Routes>
-    </BrowserRouter>
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }

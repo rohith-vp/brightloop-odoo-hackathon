@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import PasswordInput from '../components/PasswordInput';
-import { Loader2, AlertCircle, CheckCircle2, Shield, User } from 'lucide-react';
-import { authService } from '../services/authService.js';
+import { Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { useAuth } from '../auth/AuthContext';
+import { ApiError } from '../services/api';
+import { validateLogin, hasErrors } from '../lib/validation';
+import { Notice } from '../components/forms';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -14,25 +17,14 @@ export default function LoginPage() {
   });
 
   const [errors, setErrors] = useState({});
+  const [formError, setFormError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [loginSuccess, setLoginSuccess] = useState(false);
 
-  const validate = () => {
-    const newErrors = {};
-
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email address is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
-      newErrors.email = 'Please enter a valid email address';
-    }
-
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+  const { login } = useAuth();
+  const location = useLocation();
+  const notice = location.state?.notice;
+  const destination = location.state?.from ?? '/';
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -46,50 +38,30 @@ export default function LoginPage() {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!validate()) return;
+    const validationErrors = validateLogin(formData);
+    setErrors(validationErrors);
+    if (hasErrors(validationErrors)) return;
 
+    setFormError('');
     setIsLoading(true);
-
-    setTimeout(() => {
-      try {
-        const result = authService.login(formData.email, formData.password);
-        setIsLoading(false);
-        setLoginSuccess(true);
-
-        setTimeout(() => {
-          navigate(result.redirectUrl);
-        }, 400);
-      } catch (err) {
-        setIsLoading(false);
-        setErrors({ general: err.message || 'Invalid email or password.' });
+    try {
+      await login(formData.email.trim(), formData.password);
+      setIsLoading(false);
+      setLoginSuccess(true);
+      setTimeout(() => navigate(destination, { replace: true }), 500);
+    } catch (err) {
+      setIsLoading(false);
+      if (err instanceof ApiError && err.status === 401) {
+        setFormError('Invalid email or password.');
+      } else if (err instanceof ApiError && err.status === 422) {
+        setErrors(err.details);
+      } else {
+        setFormError(err.message);
       }
-    }, 500);
-  };
-
-  const handleFillDemo = (type = 'admin') => {
-    if (type === 'admin') {
-      setFormData({
-        email: 'admin@brightloop.io',
-        password: 'Password@123',
-        rememberMe: true,
-      });
-    } else if (type === 'customer1') {
-      setFormData({
-        email: 'ananya@techcorp.io',
-        password: 'Password@123',
-        rememberMe: true,
-      });
-    } else if (type === 'customer2') {
-      setFormData({
-        email: 'vikram.roy@nexusfin.com',
-        password: 'Password@123',
-        rememberMe: true,
-      });
     }
-    setErrors({});
   };
 
   return (
@@ -98,10 +70,10 @@ export default function LoginPage() {
       <div style={{ marginBottom: 'var(--space-6)', textAlign: 'left' }}>
         <h1
           style={{
-            fontSize: 'var(--font-size-heading-main)',
+            fontSize: 'var(--font-size-heading)',
             fontWeight: 'var(--font-weight-semibold)',
             color: 'var(--color-secondary)',
-            marginBottom: '6px',
+            marginBottom: '4px',
             letterSpacing: '-0.02em',
           }}
         >
@@ -118,7 +90,7 @@ export default function LoginPage() {
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
-            padding: '12px 14px',
+            padding: '10px 12px',
             borderRadius: 'var(--radius-sm)',
             backgroundColor: 'var(--status-success-bg)',
             color: 'var(--status-success-text)',
@@ -126,20 +98,31 @@ export default function LoginPage() {
             marginBottom: 'var(--space-4)',
           }}
         >
-          <CheckCircle2 size={18} />
+          <CheckCircle2 size={16} />
           <span>Signed in successfully. Redirecting to dashboard...</span>
         </div>
       )}
 
       {/* Form */}
-      <form onSubmit={handleSubmit} noValidate style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
+      {notice && !formError && (
+        <div style={{ marginBottom: 'var(--space-4)' }}>
+          <Notice tone="success">{notice}</Notice>
+        </div>
+      )}
+      {formError && (
+        <div style={{ marginBottom: 'var(--space-4)' }}>
+          <Notice>{formError}</Notice>
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} noValidate style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
         {/* Email Field */}
         <div>
           <label
             htmlFor="email"
             style={{
               display: 'block',
-              fontSize: 'var(--font-size-form-label)',
+              fontSize: '13px',
               fontWeight: 'var(--font-weight-medium)',
               color: 'var(--color-text-main)',
               marginBottom: '6px',
@@ -158,9 +141,8 @@ export default function LoginPage() {
             disabled={isLoading || loginSuccess}
             style={{
               width: '100%',
-              height: '46px',
-              padding: '10px 14px',
-              fontSize: 'var(--font-size-input)',
+              padding: '9px 12px',
+              fontSize: 'var(--font-size-body)',
               color: 'var(--color-text-main)',
               backgroundColor: 'var(--color-surface)',
               border: `1px solid ${errors.email ? 'var(--status-overdue-text)' : 'var(--color-border)'}`,
@@ -183,13 +165,13 @@ export default function LoginPage() {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '5px',
+                gap: '4px',
                 color: 'var(--status-overdue-text)',
-                fontSize: 'var(--font-size-helper)',
-                marginTop: '5px',
+                fontSize: '12px',
+                marginTop: '4px',
               }}
             >
-              <AlertCircle size={14} />
+              <AlertCircle size={13} />
               <span>{errors.email}</span>
             </div>
           )}
@@ -208,7 +190,7 @@ export default function LoginPage() {
             <label
               htmlFor="password"
               style={{
-                fontSize: 'var(--font-size-form-label)',
+                fontSize: '13px',
                 fontWeight: 'var(--font-weight-medium)',
                 color: 'var(--color-text-main)',
               }}
@@ -218,7 +200,7 @@ export default function LoginPage() {
             <Link
               to="/forgot-password"
               style={{
-                fontSize: 'var(--font-size-helper)',
+                fontSize: '12px',
                 color: 'var(--color-primary)',
                 fontWeight: 'var(--font-weight-medium)',
               }}
@@ -241,13 +223,13 @@ export default function LoginPage() {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '5px',
+                gap: '4px',
                 color: 'var(--status-overdue-text)',
-                fontSize: 'var(--font-size-helper)',
-                marginTop: '5px',
+                fontSize: '12px',
+                marginTop: '4px',
               }}
             >
-              <AlertCircle size={14} />
+              <AlertCircle size={13} />
               <span>{errors.password}</span>
             </div>
           )}
@@ -263,8 +245,8 @@ export default function LoginPage() {
             onChange={handleChange}
             disabled={isLoading || loginSuccess}
             style={{
-              width: '18px',
-              height: '18px',
+              width: '16px',
+              height: '16px',
               accentColor: 'var(--color-primary)',
               cursor: 'pointer',
             }}
@@ -272,7 +254,7 @@ export default function LoginPage() {
           <label
             htmlFor="rememberMe"
             style={{
-              fontSize: 'var(--font-size-body)',
+              fontSize: '13px',
               color: 'var(--color-text-main)',
               cursor: 'pointer',
               userSelect: 'none',
@@ -289,9 +271,8 @@ export default function LoginPage() {
           disabled={isLoading || loginSuccess}
           style={{
             width: '100%',
-            height: '46px',
             padding: '10px 16px',
-            fontSize: 'var(--font-size-button)',
+            fontSize: '14px',
             fontWeight: 'var(--font-weight-semibold)',
             marginTop: 'var(--space-2)',
             display: 'flex',
@@ -300,53 +281,9 @@ export default function LoginPage() {
             gap: '8px',
           }}
         >
-          {isLoading && <Loader2 size={18} className="spin-loader" />}
+          {isLoading && <Loader2 size={16} className="spin-loader" />}
           <span>{isLoading ? 'Signing in...' : 'Sign in to Brightloop'}</span>
         </button>
-
-        {/* Demo Quick-Fill Pill for Evaluators */}
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 'var(--space-2)',
-            marginTop: 'var(--space-3)',
-            padding: 'var(--space-3)',
-            borderRadius: 'var(--radius-md)',
-            backgroundColor: 'var(--color-surface-green)',
-            border: '1px solid rgba(8, 122, 75, 0.15)',
-          }}
-        >
-          <span style={{ fontSize: '12px', fontWeight: 'var(--font-weight-medium)', color: 'var(--color-primary)' }}>
-            Quick Demo Login:
-          </span>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-            <button
-              type="button"
-              onClick={() => handleFillDemo('admin')}
-              className="btn btn-secondary"
-              style={{ fontSize: '11px', padding: '3px 8px' }}
-            >
-              Admin (admin@brightloop.io)
-            </button>
-            <button
-              type="button"
-              onClick={() => handleFillDemo('customer1')}
-              className="btn btn-secondary"
-              style={{ fontSize: '11px', padding: '3px 8px' }}
-            >
-              Customer: TechCorp
-            </button>
-            <button
-              type="button"
-              onClick={() => handleFillDemo('customer2')}
-              className="btn btn-secondary"
-              style={{ fontSize: '11px', padding: '3px 8px' }}
-            >
-              Customer: Nexus FinTech
-            </button>
-          </div>
-        </div>
       </form>
 
       {/* Link to Signup */}
@@ -356,7 +293,7 @@ export default function LoginPage() {
           paddingTop: 'var(--space-4)',
           borderTop: '1px solid var(--color-border)',
           textAlign: 'center',
-          fontSize: 'var(--font-size-body)',
+          fontSize: '13px',
           color: 'var(--color-text-secondary)',
         }}
       >
@@ -374,3 +311,4 @@ export default function LoginPage() {
     </div>
   );
 }
+

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { NavLink, Link } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '../auth/AuthContext';
 import {
   LayoutDashboard,
   Package,
@@ -48,6 +49,14 @@ const navigationGroups = [
 ];
 
 export default function Sidebar({ isOpen, onClose }) {
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
+  const signOut = () => {
+    logout();
+    navigate('/login', { replace: true });
+  };
+
   const [searchTerm, setSearchTerm] = useState('');
 
   return (
@@ -245,8 +254,9 @@ export default function Sidebar({ isOpen, onClose }) {
           </div>
         </div>
 
-        <Link
-          to="/login"
+        <button
+          type="button"
+          onClick={signOut}
           title="Sign out of Brightloop"
           style={{
             color: 'var(--color-text-secondary)',
@@ -261,7 +271,7 @@ export default function Sidebar({ isOpen, onClose }) {
           onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--color-text-secondary)')}
         >
           <LogOut size={17} />
-        </Link>
+        </button>
       </div>
     </aside>
   );

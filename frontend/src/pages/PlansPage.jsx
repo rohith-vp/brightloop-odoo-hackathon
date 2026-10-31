@@ -1,614 +1,298 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import {
-  Plus,
-  Search,
-  Eye,
-  Edit2,
-  Trash2,
-  Layers,
-  CheckCircle2,
-  RotateCcw,
-} from 'lucide-react';
-import { planService, BILLING_FREQUENCIES } from '../services/planService';
-import PlanModal from '../components/PlanModal';
-import PlanViewModal from '../components/PlanViewModal';
-import DeleteConfirmModal from '../components/DeleteConfirmModal';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { ApiError, plansApi, loadVariantOptions } from '../services/api';
+import { useAuth } from '../auth/AuthContext';
+import { validatePlan, hasErrors, BILLING_INTERVALS, END_BEHAVIORS } from '../lib/validation';
+import { addMoney } from '../lib/money';
+import { FormField, TextInput, SelectInput, Notice, ListPager } from '../components/forms';
+import { panelStyle, formGridStyle, sectionTitleStyle } from '../styles/forms';
+
+const EMPTY_PLAN = {
+  name: '',
+  product_variant_id: '',
+  billing_interval: 'MONTH',
+  minimum_quantity: '1',
+  end_behavior: 'AUTO_CLOSE',
+  available_from: '',
+  available_to: '',
+};
+
+const intervalLabel = (value) => BILLING_INTERVALS.find((i) => i.value === value)?.label ?? value;
+const endLabel = (value) => (value === 'MANUAL_CLOSE' ? 'Manual close' : 'Auto close');
 
 export default function PlansPage() {
+  const { canManageCatalog } = useAuth();
   const [plans, setPlans] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [frequencyFilter, setFrequencyFilter] = useState('ALL');
-  const [statusFilter, setStatusFilter] = useState('ALL');
-  const [currentSimDate, setCurrentSimDate] = useState(() => planService.getCurrentDate());
-  const isMockedDate = Boolean(planService.getMockCurrentDate());
+  const [meta, setMeta] = useState(null);
+  const [loadError, setLoadError] = useState('');
+  const [notice, setNotice] = useState(null);
 
-  const handleSimDateChange = (newDate) => {
-    planService.setMockCurrentDate(newDate);
-    setCurrentSimDate(newDate);
-    loadPlans();
-  };
+  const [variants, setVariants] = useState([]);
+  const [optionsError, setOptionsError] = useState('');
 
-  const handleResetSimDate = () => {
-    planService.clearMockCurrentDate();
-    setCurrentSimDate(planService.getCurrentDate());
-    loadPlans();
-  };
+  const [editing, setEditing] = useState(null); // null, 'new', or a plan id
+  const [form, setForm] = useState(EMPTY_PLAN);
+  const [formErrors, setFormErrors] = useState({});
+  const [formError, setFormError] = useState('');
+  const [saving, setSaving] = useState(false);
 
-  // Modal states
-  const [isFormModalOpen, setIsFormModalOpen] = useState(false);
-  const [formInitialData, setFormInitialData] = useState(null);
+  const variantLabels = useMemo(
+    () =>
+      new Map(
+        variants.map((v) => [
+          v.id,
+          `${v.productName} · ${v.attribute}: ${v.value} (${addMoney(v.salePrice, v.priceExtra)} per seat)`,
+        ]),
+      ),
+    [variants],
+  );
 
-  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [viewPlan, setViewPlan] = useState(null);
+  const variantOptions = useMemo(
+    () => variants.map((v) => ({ value: v.id, label: variantLabels.get(v.id) })),
+    [variants, variantLabels],
+  );
 
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [deletingPlan, setDeletingPlan] = useState(null);
-
-  // Toast notification
-  const [toastMessage, setToastMessage] = useState('');
-
-  const loadPlans = () => {
-    const list = planService.getPlans();
-    setPlans(list);
-  };
-
-  useEffect(() => {
-    loadPlans();
+  const loadPlans = useCallback(async (page = 1) => {
+    try {
+      const { data, meta: pageMeta } = await plansApi.list({ page, page_size: 10 });
+      setPlans(data);
+      setMeta(pageMeta);
+      setLoadError('');
+    } catch (err) {
+      setLoadError(err.message);
+    }
   }, []);
 
-  const showToast = (msg) => {
-    setToastMessage(msg);
-    setTimeout(() => {
-      setToastMessage('');
-    }, 3000);
+  const loadOptions = useCallback(async () => {
+    try {
+      setVariants(await loadVariantOptions());
+      setOptionsError('');
+    } catch (err) {
+      setOptionsError(err.message);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadPlans(1);
+    loadOptions();
+  }, [loadPlans, loadOptions]);
+
+  const openNew = () => {
+    setEditing('new');
+    setForm(EMPTY_PLAN);
+    setFormErrors({});
+    setFormError('');
   };
 
-  // Filter & Search
-  const filteredPlans = useMemo(() => {
-    return plans.filter((plan) => {
-      const query = searchTerm.toLowerCase();
-      const matchesSearch =
-        plan.name.toLowerCase().includes(query) ||
-        (plan.productName && plan.productName.toLowerCase().includes(query)) ||
-        (plan.description && plan.description.toLowerCase().includes(query));
-
-      const matchesFreq =
-        frequencyFilter === 'ALL' || plan.billingFrequency === frequencyFilter;
-      const matchesStatus =
-        statusFilter === 'ALL' ||
-        plan.status === statusFilter.toLowerCase() ||
-        (statusFilter.toLowerCase() === 'available' && (plan.status === 'available' || plan.status === 'active'));
-
-      return matchesSearch && matchesFreq && matchesStatus;
+  const openEdit = (plan) => {
+    setEditing(plan.id);
+    setForm({
+      name: plan.name,
+      product_variant_id: plan.product_variant_id,
+      billing_interval: plan.billing_interval,
+      minimum_quantity: String(plan.minimum_quantity),
+      end_behavior: plan.end_behavior,
+      available_from: plan.available_from ?? '',
+      available_to: plan.available_to ?? '',
     });
-  }, [plans, searchTerm, frequencyFilter, statusFilter]);
-
-  // Metric counts
-  const totalPlansCount = plans.length;
-  const availablePlansCount = useMemo(
-    () => plans.filter((p) => p.status === 'available' || p.status === 'active').length,
-    [plans]
-  );
-  const upcomingPlansCount = useMemo(
-    () => plans.filter((p) => p.status === 'upcoming').length,
-    [plans]
-  );
-  const expiredPlansCount = useMemo(
-    () => plans.filter((p) => p.status === 'expired').length,
-    [plans]
-  );
-
-  // CRUD Handlers
-  const handleOpenCreate = () => {
-    setFormInitialData(null);
-    setIsFormModalOpen(true);
+    setFormErrors({});
+    setFormError('');
   };
 
-  const handleOpenEdit = (plan) => {
-    setFormInitialData(plan);
-    setIsFormModalOpen(true);
-  };
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    const errors = validatePlan(form);
+    setFormErrors(errors);
+    if (hasErrors(errors)) return;
 
-  const handleOpenView = (plan) => {
-    setViewPlan(plan);
-    setIsViewModalOpen(true);
-  };
+    const payload = {
+      name: form.name.trim(),
+      product_variant_id: form.product_variant_id,
+      billing_interval: form.billing_interval,
+      minimum_quantity: Number(form.minimum_quantity),
+      end_behavior: form.end_behavior,
+      available_from: form.available_from || null,
+      available_to: form.available_to || null,
+    };
 
-  const handleOpenDelete = (plan) => {
-    setDeletingPlan(plan);
-    setIsDeleteModalOpen(true);
-  };
-
-  const handleSavePlan = (formData) => {
-    if (formInitialData && formInitialData.id) {
-      planService.updatePlan(formInitialData.id, formData);
-      showToast(`Plan "${formData.name}" updated successfully.`);
-    } else {
-      planService.createPlan(formData);
-      showToast(`Plan "${formData.name}" created successfully.`);
-    }
-    setIsFormModalOpen(false);
-    loadPlans();
-  };
-
-  const handleConfirmDelete = () => {
-    if (deletingPlan) {
-      planService.deletePlan(deletingPlan.id);
-      showToast(`Plan "${deletingPlan.name}" deleted successfully.`);
-      setIsDeleteModalOpen(false);
-      setDeletingPlan(null);
-      loadPlans();
+    setSaving(true);
+    try {
+      if (editing === 'new') {
+        await plansApi.create(payload);
+        setNotice({ tone: 'success', text: `Created plan ${payload.name}.` });
+      } else {
+        await plansApi.update(editing, payload);
+        setNotice({ tone: 'success', text: `Saved plan ${payload.name}.` });
+      }
+      setEditing(null);
+      await loadPlans(meta?.page ?? 1);
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 422 && Object.keys(err.details).length > 0) {
+        setFormErrors(err.details);
+        setFormError('Please fix the highlighted fields.');
+      } else {
+        setFormError(err.message);
+      }
+    } finally {
+      setSaving(false);
     }
   };
 
-  const handleResetFilters = () => {
-    setSearchTerm('');
-    setFrequencyFilter('ALL');
-    setStatusFilter('ALL');
+  const handleDelete = async (plan) => {
+    if (!window.confirm(`Delete the plan ${plan.name}?`)) return;
+    try {
+      await plansApi.remove(plan.id);
+      setNotice({ tone: 'success', text: `Deleted plan ${plan.name}.` });
+      await loadPlans(meta?.page ?? 1);
+    } catch (err) {
+      setNotice({ tone: 'error', text: err.message });
+    }
+  };
+
+  const setField = (name) => (event) => {
+    setForm((current) => ({ ...current, [name]: event.target.value }));
+    if (formErrors[name]) setFormErrors((current) => ({ ...current, [name]: '' }));
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-      {/* Toast Notification */}
-      {toastMessage && (
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '10px 16px',
-            backgroundColor: 'var(--status-success-bg)',
-            color: 'var(--status-success-text)',
-            borderRadius: 'var(--radius-sm)',
-            fontSize: 'var(--font-size-body)',
-            fontWeight: 'var(--font-weight-medium)',
-            border: '1px solid var(--color-primary)',
-          }}
-        >
-          <CheckCircle2 size={18} />
-          <span>{toastMessage}</span>
+    <div>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', marginBottom: 'var(--space-6)' }}>
+        <div>
+          <h1 style={{ fontSize: 'var(--font-size-heading)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--color-secondary)', letterSpacing: '-0.02em' }}>
+            Plans
+          </h1>
+          <p style={{ color: 'var(--color-text-secondary)', marginTop: '4px' }}>
+            What a subscription costs, how often it bills, its minimum quantity, and when it is available.
+          </p>
+        </div>
+        {canManageCatalog && editing === null && (
+          <button type="button" className="btn btn-primary" onClick={openNew} disabled={variants.length === 0}>
+            New plan
+          </button>
+        )}
+      </div>
+
+      {notice && (
+        <div style={{ marginBottom: 'var(--space-4)' }}>
+          <Notice tone={notice.tone}>{notice.text}</Notice>
+        </div>
+      )}
+      {optionsError && (
+        <div style={{ marginBottom: 'var(--space-4)' }}>
+          <Notice>Could not load products for the plan form: {optionsError}</Notice>
+        </div>
+      )}
+      {canManageCatalog && variants.length === 0 && !optionsError && (
+        <div style={{ marginBottom: 'var(--space-4)' }}>
+          <Notice tone="success">Add a product with at least one variant before creating a plan.</Notice>
         </div>
       )}
 
-      {/* 1. Header Section */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: 'var(--space-4)',
-        }}
-      >
-        <div>
-          <h1
-            style={{
-              fontSize: 'var(--font-size-heading-main)',
-              fontWeight: 'var(--font-weight-semibold)',
-              color: 'var(--color-secondary)',
-              letterSpacing: '-0.02em',
-              marginBottom: '4px',
-            }}
-          >
-            Plans
-          </h1>
-          <p
-            style={{
-              fontSize: 'var(--font-size-body)',
-              color: 'var(--color-text-secondary)',
-            }}
-          >
-            Manage billing plans and subscription configurations.
-          </p>
-        </div>
-
-        <button
-          type="button"
-          onClick={handleOpenCreate}
-          className="btn btn-primary"
-        >
-          <Plus size={18} />
-          <span>Create Plan</span>
-        </button>
-      </div>
-
-      {/* 2. Top Metric Cards */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))',
-          gap: 'var(--space-4)',
-        }}
-      >
-        <div className="card-surface" style={{ padding: 'var(--space-5)' }}>
-          <span style={{ fontSize: 'var(--font-size-metric-label)', color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 'var(--font-weight-medium)' }}>
-            Total Plans
-          </span>
-          <div style={{ fontSize: 'var(--font-size-metric-value)', fontWeight: 'var(--font-weight-bold)', color: 'var(--color-secondary)', marginTop: '6px' }}>
-            {totalPlansCount}
-          </div>
-        </div>
-
-        <div className="card-surface" style={{ padding: 'var(--space-5)' }}>
-          <span style={{ fontSize: 'var(--font-size-metric-label)', color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 'var(--font-weight-medium)' }}>
-            Available Plans
-          </span>
-          <div style={{ fontSize: 'var(--font-size-metric-value)', fontWeight: 'var(--font-weight-bold)', color: 'var(--color-primary)', marginTop: '6px' }}>
-            {availablePlansCount}
-          </div>
-        </div>
-
-        <div className="card-surface" style={{ padding: 'var(--space-5)' }}>
-          <span style={{ fontSize: 'var(--font-size-metric-label)', color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 'var(--font-weight-medium)' }}>
-            Upcoming Plans
-          </span>
-          <div style={{ fontSize: 'var(--font-size-metric-value)', fontWeight: 'var(--font-weight-bold)', color: '#D97706', marginTop: '6px' }}>
-            {upcomingPlansCount}
-          </div>
-        </div>
-
-        <div className="card-surface" style={{ padding: 'var(--space-5)' }}>
-          <span style={{ fontSize: 'var(--font-size-metric-label)', color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 'var(--font-weight-medium)' }}>
-            Expired Plans
-          </span>
-          <div style={{ fontSize: 'var(--font-size-metric-value)', fontWeight: 'var(--font-weight-bold)', color: 'var(--status-overdue-text)', marginTop: '6px' }}>
-            {expiredPlansCount}
-          </div>
-        </div>
-      </div>
-
-      {/* 3. Search and Filters Toolbar */}
-      <div
-        className="card-surface"
-        style={{
-          padding: 'var(--space-4) var(--space-5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: 'var(--space-3)',
-        }}
-      >
-        {/* Search */}
-        <div style={{ flex: '1 1 280px', maxWidth: '420px' }}>
-          <div className="search-input-wrapper">
-            <Search size={16} style={{ color: 'var(--color-text-secondary)' }} />
-            <input
-              type="text"
-              className="search-input"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search plans by name, product or description..."
-            />
-          </div>
-        </div>
-
-        {/* Dropdown Filters */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
-          {/* Billing Frequency Filter */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ fontSize: 'var(--font-size-helper)', color: 'var(--color-text-secondary)' }}>Frequency:</span>
-            <select
-              value={frequencyFilter}
-              onChange={(e) => setFrequencyFilter(e.target.value)}
-              style={{
-                height: '42px',
-                padding: '8px 12px',
-                fontSize: 'var(--font-size-body)',
-                color: 'var(--color-text-main)',
-                backgroundColor: 'var(--color-surface)',
-                border: '1px solid var(--color-border)',
-                borderRadius: 'var(--radius-sm)',
-                outline: 'none',
-                cursor: 'pointer',
-              }}
-            >
-              <option value="ALL">All Frequencies</option>
-              {BILLING_FREQUENCIES.map((freq) => (
-                <option key={freq} value={freq}>
-                  {freq}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Status Filter */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ fontSize: 'var(--font-size-helper)', color: 'var(--color-text-secondary)' }}>Status:</span>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              style={{
-                height: '42px',
-                padding: '8px 12px',
-                fontSize: 'var(--font-size-body)',
-                color: 'var(--color-text-main)',
-                backgroundColor: 'var(--color-surface)',
-                border: '1px solid var(--color-border)',
-                borderRadius: 'var(--radius-sm)',
-                outline: 'none',
-                cursor: 'pointer',
-              }}
-            >
-              <option value="ALL">All Statuses</option>
-              <option value="available">Available</option>
-              <option value="upcoming">Upcoming</option>
-              <option value="expired">Expired</option>
-              <option value="inactive">Inactive</option>
-            </select>
-          </div>
-
-          {/* Test / Simulated System Date */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ fontSize: 'var(--font-size-helper)', color: 'var(--color-text-secondary)' }}>System Date:</span>
-            <input
-              type="date"
-              value={currentSimDate}
-              onChange={(e) => handleSimDateChange(e.target.value)}
-              style={{
-                height: '42px',
-                padding: '6px 10px',
-                fontSize: 'var(--font-size-body)',
-                color: 'var(--color-text-main)',
-                backgroundColor: isMockedDate ? 'var(--color-surface-green)' : 'var(--color-surface)',
-                border: `1px solid ${isMockedDate ? 'var(--color-primary)' : 'var(--color-border)'}`,
-                borderRadius: 'var(--radius-sm)',
-                outline: 'none',
-                cursor: 'pointer',
-              }}
-              title="Simulate system date to test plan availability"
-            />
-            {isMockedDate && (
-              <button
-                type="button"
-                onClick={handleResetSimDate}
-                className="btn btn-secondary"
-                style={{ height: '42px', padding: '0 10px', fontSize: '12px' }}
-                title="Reset to current local date"
-              >
-                Reset
-              </button>
-            )}
-          </div>
-
-          {/* Reset Filters */}
-          {(searchTerm || frequencyFilter !== 'ALL' || statusFilter !== 'ALL') && (
-            <button
-              type="button"
-              onClick={handleResetFilters}
-              className="btn btn-secondary"
-              style={{ padding: '8px 12px' }}
-              title="Reset all search and filter conditions"
-            >
-              <RotateCcw size={14} />
-              <span>Reset</span>
-            </button>
+      {editing !== null && (
+        <form className="card-surface" style={panelStyle} onSubmit={handleSubmit} noValidate>
+          <h2 style={sectionTitleStyle}>{editing === 'new' ? 'New plan' : 'Edit plan'}</h2>
+          {formError && (
+            <div style={{ marginBottom: 'var(--space-4)' }}>
+              <Notice>{formError}</Notice>
+            </div>
           )}
-        </div>
-      </div>
+          <div style={formGridStyle}>
+            <FormField label="Plan name" htmlFor="plan-name" error={formErrors.name}>
+              <TextInput id="plan-name" value={form.name} onChange={setField('name')} error={formErrors.name} />
+            </FormField>
+            <FormField label="Product variant" htmlFor="plan-variant" error={formErrors.product_variant_id}>
+              <SelectInput
+                id="plan-variant"
+                placeholder="Choose a variant"
+                options={variantOptions}
+                value={form.product_variant_id}
+                onChange={setField('product_variant_id')}
+                error={formErrors.product_variant_id}
+              />
+            </FormField>
+            <FormField label="Billing interval" htmlFor="plan-interval" error={formErrors.billing_interval}>
+              <SelectInput id="plan-interval" options={BILLING_INTERVALS} value={form.billing_interval} onChange={setField('billing_interval')} error={formErrors.billing_interval} />
+            </FormField>
+            <FormField label="Minimum quantity (seats)" htmlFor="plan-min" error={formErrors.minimum_quantity}>
+              <TextInput id="plan-min" type="number" min="1" step="1" value={form.minimum_quantity} onChange={setField('minimum_quantity')} error={formErrors.minimum_quantity} />
+            </FormField>
+            <FormField label="End behavior" htmlFor="plan-end" error={formErrors.end_behavior}>
+              <SelectInput id="plan-end" options={END_BEHAVIORS} value={form.end_behavior} onChange={setField('end_behavior')} error={formErrors.end_behavior} />
+            </FormField>
+            <FormField label="Available from" htmlFor="plan-from" error={formErrors.available_from} hint="Optional">
+              <TextInput id="plan-from" type="date" value={form.available_from} onChange={setField('available_from')} error={formErrors.available_from} />
+            </FormField>
+            <FormField label="Available until" htmlFor="plan-to" error={formErrors.available_to} hint="Optional">
+              <TextInput id="plan-to" type="date" value={form.available_to} onChange={setField('available_to')} error={formErrors.available_to} />
+            </FormField>
+          </div>
+          <div style={{ display: 'flex', gap: '8px', marginTop: 'var(--space-4)' }}>
+            <button type="submit" className="btn btn-primary" disabled={saving}>
+              {saving ? 'Saving…' : 'Save plan'}
+            </button>
+            <button type="button" className="btn btn-secondary" onClick={() => setEditing(null)} disabled={saving}>
+              Cancel
+            </button>
+          </div>
+        </form>
+      )}
 
-      {/* 4. Plans Table */}
-      <div className="card-surface" style={{ overflow: 'hidden' }}>
-        <div className="table-container" style={{ border: 'none', borderRadius: 0 }}>
-          <table className="fintech-table">
-            <thead>
+      {loadError && (
+        <div style={{ marginBottom: 'var(--space-4)' }}>
+          <Notice>{loadError}</Notice>
+        </div>
+      )}
+
+      <div className="table-container card-surface">
+        <table className="fintech-table" style={{ width: '100%' }}>
+          <thead>
+            <tr>
+              <th>Plan</th>
+              <th>Interval</th>
+              <th>Min seats</th>
+              <th>Unit price</th>
+              <th>End behavior</th>
+              <th>Availability</th>
+              <th aria-label="Actions" />
+            </tr>
+          </thead>
+          <tbody>
+            {plans.length === 0 && (
               <tr>
-                <th>Plan Name</th>
-                <th>Product</th>
-                <th>Billing Cycle</th>
-                <th>Price</th>
-                <th>Minimum Quantity</th>
-                <th>Availability</th>
-                <th>Status</th>
-                <th style={{ textAlign: 'right' }}>Actions</th>
+                <td colSpan={7} style={{ color: 'var(--color-text-secondary)' }}>
+                  No plans yet.
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {filteredPlans.length === 0 ? (
-                <tr>
-                  <td colSpan={8} style={{ textAlign: 'center', padding: 'var(--space-10) var(--space-4)' }}>
-                    <div
-                      style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: 'var(--space-2)',
-                      }}
-                    >
-                      <Layers size={36} style={{ color: 'var(--color-text-secondary)', opacity: 0.5 }} />
-                      <div
-                        style={{
-                          fontSize: 'var(--font-size-heading-card)',
-                          fontWeight: 'var(--font-weight-semibold)',
-                          color: 'var(--color-secondary)',
-                        }}
-                      >
-                        No plans match your criteria
-                      </div>
-                      <p style={{ fontSize: 'var(--font-size-helper)', color: 'var(--color-text-secondary)', maxWidth: '380px' }}>
-                        {searchTerm || frequencyFilter !== 'ALL' || statusFilter !== 'ALL'
-                          ? 'Try adjusting or clearing your search filters to view your plans catalog.'
-                          : 'No billing plans configured yet. Create your first plan to start offering subscriptions.'}
-                      </p>
-                      {searchTerm || frequencyFilter !== 'ALL' || statusFilter !== 'ALL' ? (
-                        <button
-                          type="button"
-                          onClick={handleResetFilters}
-                          className="btn btn-secondary"
-                          style={{ marginTop: 'var(--space-3)' }}
-                        >
-                          Clear Filters
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={handleOpenCreate}
-                          className="btn btn-primary"
-                          style={{ marginTop: 'var(--space-3)' }}
-                        >
-                          <Plus size={16} />
-                          <span>Create New Plan</span>
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                filteredPlans.map((plan) => {
-                  const availabilityLabel = plan.startDate
-                    ? `${plan.startDate} → ${plan.endDate ? plan.endDate : 'Ongoing'}`
-                    : plan.endDate
-                    ? `Until ${plan.endDate}`
-                    : 'Ongoing';
-
-                  const displayStatus = plan.availabilityStatus || (plan.status.charAt(0).toUpperCase() + plan.status.slice(1));
-                  const badgeClass =
-                    plan.status === 'available' || plan.status === 'active'
-                      ? 'success'
-                      : plan.status === 'expired'
-                      ? 'overdue'
-                      : 'pending';
-
-                  return (
-                    <tr key={plan.id}>
-                      {/* Plan Name */}
-                      <td>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                          <span style={{ fontWeight: 'var(--font-weight-semibold)', color: 'var(--color-secondary)', fontSize: 'var(--font-size-table-content)' }}>
-                            {plan.name}
-                          </span>
-                          {plan.description && (
-                            <span
-                              style={{
-                                fontSize: 'var(--font-size-helper)',
-                                color: 'var(--color-text-secondary)',
-                                maxWidth: '300px',
-                                whiteSpace: 'nowrap',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                              }}
-                            >
-                              {plan.description}
-                            </span>
-                          )}
-                        </div>
-                      </td>
-
-                      {/* Associated Product */}
-                      <td>
-                        <span style={{ fontWeight: 'var(--font-weight-medium)', color: 'var(--color-text-main)', fontSize: 'var(--font-size-table-content)' }}>
-                          {plan.productName}
-                        </span>
-                      </td>
-
-                      {/* Billing Cycle */}
-                      <td>
-                        <span
-                          style={{
-                            fontSize: 'var(--font-size-helper)',
-                            fontWeight: 'var(--font-weight-medium)',
-                            color: 'var(--color-text-main)',
-                            backgroundColor: 'var(--color-background)',
-                            padding: '4px 10px',
-                            borderRadius: 'var(--radius-xs)',
-                            border: '1px solid var(--color-border)',
-                          }}
-                        >
-                          {plan.billingFrequency}
-                        </span>
-                      </td>
-
-                      {/* Price */}
-                      <td style={{ fontWeight: 'var(--font-weight-semibold)', color: 'var(--color-secondary)', fontSize: 'var(--font-size-table-content)' }}>
-                        {planService.formatCurrency(plan.price)}
-                      </td>
-
-                      {/* Minimum Quantity */}
-                      <td style={{ color: 'var(--color-text-main)', fontSize: 'var(--font-size-table-content)' }}>
-                        {plan.minQuantity || 1} unit(s)
-                      </td>
-
-                      {/* Availability */}
-                      <td>
-                        <span style={{ fontSize: 'var(--font-size-helper)', color: 'var(--color-text-secondary)', whiteSpace: 'nowrap' }}>
-                          {availabilityLabel}
-                        </span>
-                      </td>
-
-                      {/* Status */}
-                      <td>
-                        <span className={`status-badge ${badgeClass}`}>
-                          {displayStatus}
-                        </span>
-                      </td>
-
-                      {/* Actions */}
-                      <td style={{ textAlign: 'right' }}>
-                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                          <button
-                            type="button"
-                            onClick={() => handleOpenView(plan)}
-                            title="View plan details & lifecycle"
-                            className="btn-icon"
-                            style={{ width: '32px', height: '32px' }}
-                          >
-                            <Eye size={16} />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleOpenEdit(plan)}
-                            title="Edit plan"
-                            className="btn-icon"
-                            style={{ width: '32px', height: '32px' }}
-                          >
-                            <Edit2 size={16} />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleOpenDelete(plan)}
-                            title="Delete plan"
-                            className="btn-icon"
-                            style={{ width: '32px', height: '32px', color: 'var(--status-overdue-text)' }}
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+            )}
+            {plans.map((plan) => (
+              <tr key={plan.id}>
+                <td>{plan.name}</td>
+                <td>{intervalLabel(plan.billing_interval)}</td>
+                <td>{plan.minimum_quantity}</td>
+                <td>{plan.unit_price}</td>
+                <td>{endLabel(plan.end_behavior)}</td>
+                <td>
+                  {plan.available_from || plan.available_to
+                    ? `${plan.available_from ?? 'Open'} to ${plan.available_to ?? 'open'}`
+                    : 'Always'}
+                </td>
+                <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
+                  {canManageCatalog && (
+                    <>
+                      <button type="button" className="btn btn-secondary" onClick={() => openEdit(plan)}>
+                        Edit
+                      </button>{' '}
+                      <button type="button" className="btn btn-secondary" onClick={() => handleDelete(plan)}>
+                        Delete
+                      </button>
+                    </>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
-
-      {/* Modals */}
-      <PlanModal
-        isOpen={isFormModalOpen}
-        onClose={() => setIsFormModalOpen(false)}
-        onSave={handleSavePlan}
-        initialData={formInitialData}
-      />
-
-      <PlanViewModal
-        isOpen={isViewModalOpen}
-        onClose={() => setIsViewModalOpen(false)}
-        plan={viewPlan}
-        onEdit={(plan) => {
-          setIsViewModalOpen(false);
-          handleOpenEdit(plan);
-        }}
-      />
-
-      <DeleteConfirmModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleConfirmDelete}
-        itemTitle={deletingPlan?.name || ''}
-      />
+      <ListPager meta={meta} onPage={loadPlans} />
     </div>
   );
 }
-

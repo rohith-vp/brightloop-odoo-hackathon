@@ -1,552 +1,359 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import {
-  Plus,
-  Search,
-  Eye,
-  Edit2,
-  Trash2,
-  Package,
-  CheckCircle2,
-  RotateCcw,
-} from 'lucide-react';
-import { productService, PRODUCT_TYPES } from '../services/productService';
-import ProductModal from '../components/ProductModal';
-import ProductViewModal from '../components/ProductViewModal';
-import DeleteConfirmModal from '../components/DeleteConfirmModal';
+import { useCallback, useEffect, useState } from 'react';
+import { ApiError, productsApi } from '../services/api';
+import { useAuth } from '../auth/AuthContext';
+import { validateProduct, validateVariant, hasErrors } from '../lib/validation';
+import { formatCents, toCents } from '../lib/money';
+import { FormField, TextInput, TextArea, Notice, ListPager } from '../components/forms';
+import { panelStyle, formGridStyle, sectionTitleStyle } from '../styles/forms';
+
+const EMPTY_PRODUCT = { name: '', type: '', sale_price: '', cost_price: '', notes: '' };
+const EMPTY_VARIANT = { attribute: '', value: '', price_extra: '' };
 
 export default function ProductsPage() {
+  const { canManageCatalog } = useAuth();
   const [products, setProducts] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [typeFilter, setTypeFilter] = useState('ALL');
-  const [statusFilter, setStatusFilter] = useState('ALL');
+  const [meta, setMeta] = useState(null);
+  const [loadError, setLoadError] = useState('');
+  const [notice, setNotice] = useState(null);
 
-  // Modals state
-  const [isFormModalOpen, setIsFormModalOpen] = useState(false);
-  const [formInitialData, setFormInitialData] = useState(null);
+  const [editing, setEditing] = useState(null); // null, 'new', or a product id
+  const [form, setForm] = useState(EMPTY_PRODUCT);
+  const [formErrors, setFormErrors] = useState({});
+  const [formError, setFormError] = useState('');
+  const [saving, setSaving] = useState(false);
 
-  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [viewProduct, setViewProduct] = useState(null);
+  const [expandedId, setExpandedId] = useState(null);
+  const [variantForm, setVariantForm] = useState(EMPTY_VARIANT);
+  const [variantErrors, setVariantErrors] = useState({});
+  const [variantError, setVariantError] = useState('');
 
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [deletingProduct, setDeletingProduct] = useState(null);
-
-  // Notification banner
-  const [toastMessage, setToastMessage] = useState('');
-
-  const loadProducts = () => {
-    const list = productService.getProducts();
-    setProducts(list);
-  };
-
-  useEffect(() => {
-    loadProducts();
+  const loadProducts = useCallback(async (page = 1) => {
+    try {
+      const { data, meta: pageMeta } = await productsApi.list({ page, page_size: 10 });
+      setProducts(data);
+      setMeta(pageMeta);
+      setLoadError('');
+    } catch (err) {
+      setLoadError(err.message);
+    }
   }, []);
 
-  const showToast = (msg) => {
-    setToastMessage(msg);
-    setTimeout(() => {
-      setToastMessage('');
-    }, 3000);
+  useEffect(() => {
+    loadProducts(1);
+  }, [loadProducts]);
+
+  // Refreshes the expanded product so its variant list is current.
+  const refreshExpanded = async () => {
+    if (!expandedId) return;
+    const updated = await productsApi.get(expandedId);
+    setProducts((list) => list.map((p) => (p.id === updated.id ? updated : p)));
   };
 
-  // Filter & Search logic
-  const filteredProducts = useMemo(() => {
-    return products.filter((prod) => {
-      const matchesSearch =
-        prod.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (prod.notes && prod.notes.toLowerCase().includes(searchTerm.toLowerCase()));
+  const openNew = () => {
+    setEditing('new');
+    setForm(EMPTY_PRODUCT);
+    setFormErrors({});
+    setFormError('');
+  };
 
-      const matchesType = typeFilter === 'ALL' || prod.type === typeFilter;
-      const matchesStatus = statusFilter === 'ALL' || prod.status === statusFilter;
-
-      return matchesSearch && matchesType && matchesStatus;
+  const openEdit = (product) => {
+    setEditing(product.id);
+    setForm({
+      name: product.name,
+      type: product.type ?? '',
+      sale_price: product.sale_price,
+      cost_price: product.cost_price ?? '',
+      notes: product.notes ?? '',
     });
-  }, [products, searchTerm, typeFilter, statusFilter]);
-
-  // Statistics
-  const totalVariantsCount = useMemo(() => {
-    return products.reduce((acc, p) => acc + (p.variants?.length || 0), 0);
-  }, [products]);
-
-  const activeProductsCount = useMemo(() => {
-    return products.filter((p) => p.status === 'active').length;
-  }, [products]);
-
-  // CRUD Handlers
-  const handleOpenAdd = () => {
-    setFormInitialData(null);
-    setIsFormModalOpen(true);
+    setFormErrors({});
+    setFormError('');
   };
 
-  const handleOpenEdit = (product) => {
-    setFormInitialData(product);
-    setIsFormModalOpen(true);
+  const closeForm = () => {
+    setEditing(null);
+    setFormError('');
   };
 
-  const handleOpenView = (product) => {
-    setViewProduct(product);
-    setIsViewModalOpen(true);
-  };
+  const handleProductSubmit = async (event) => {
+    event.preventDefault();
+    const errors = validateProduct(form);
+    setFormErrors(errors);
+    if (hasErrors(errors)) return;
 
-  const handleOpenDelete = (product) => {
-    setDeletingProduct(product);
-    setIsDeleteModalOpen(true);
-  };
+    const payload = {
+      name: form.name.trim(),
+      type: form.type.trim() || null,
+      sale_price: form.sale_price.trim(),
+      cost_price: form.cost_price.trim() || null,
+      notes: form.notes.trim() || null,
+    };
 
-  const handleSaveProduct = (formData) => {
-    if (formInitialData && formInitialData.id) {
-      productService.updateProduct(formInitialData.id, formData);
-      showToast(`Product "${formData.name}" updated successfully.`);
-    } else {
-      productService.createProduct(formData);
-      showToast(`Product "${formData.name}" created successfully.`);
-    }
-    setIsFormModalOpen(false);
-    loadProducts();
-  };
-
-  const handleConfirmDelete = () => {
-    if (deletingProduct) {
-      productService.deleteProduct(deletingProduct.id);
-      showToast(`Product "${deletingProduct.name}" removed from catalog.`);
-      setIsDeleteModalOpen(false);
-      setDeletingProduct(null);
-      loadProducts();
+    setSaving(true);
+    try {
+      if (editing === 'new') {
+        await productsApi.create(payload);
+        setNotice({ tone: 'success', text: `Created ${payload.name}.` });
+      } else {
+        await productsApi.update(editing, payload);
+        setNotice({ tone: 'success', text: `Saved ${payload.name}.` });
+      }
+      setEditing(null);
+      await loadProducts(meta?.page ?? 1);
+      await refreshExpanded();
+    } catch (err) {
+      applyServerErrors(err, setFormErrors, setFormError);
+    } finally {
+      setSaving(false);
     }
   };
 
-  const handleResetFilters = () => {
-    setSearchTerm('');
-    setTypeFilter('ALL');
-    setStatusFilter('ALL');
+  const handleDelete = async (product) => {
+    if (!window.confirm(`Delete ${product.name} and all its variants? This cannot be undone.`)) return;
+    try {
+      await productsApi.remove(product.id);
+      setNotice({ tone: 'success', text: `Deleted ${product.name}.` });
+      if (expandedId === product.id) setExpandedId(null);
+      await loadProducts(meta?.page ?? 1);
+    } catch (err) {
+      setNotice({ tone: 'error', text: err.message });
+    }
+  };
+
+  const toggleExpanded = (productId) => {
+    setExpandedId((current) => (current === productId ? null : productId));
+    setVariantForm(EMPTY_VARIANT);
+    setVariantErrors({});
+    setVariantError('');
+  };
+
+  const handleAddVariant = async (event, productId) => {
+    event.preventDefault();
+    const errors = validateVariant(variantForm);
+    setVariantErrors(errors);
+    if (hasErrors(errors)) return;
+
+    try {
+      await productsApi.addVariant(productId, {
+        attribute: variantForm.attribute.trim(),
+        value: variantForm.value.trim(),
+        price_extra: variantForm.price_extra.trim() || '0.00',
+      });
+      setVariantForm(EMPTY_VARIANT);
+      setVariantErrors({});
+      setVariantError('');
+      await refreshExpanded();
+    } catch (err) {
+      applyServerErrors(err, setVariantErrors, setVariantError);
+    }
+  };
+
+  const handleRemoveVariant = async (variant) => {
+    if (!window.confirm(`Remove ${variant.attribute}: ${variant.value}?`)) return;
+    try {
+      await productsApi.removeVariant(variant.id);
+      await refreshExpanded();
+    } catch (err) {
+      setVariantError(err.message);
+    }
+  };
+
+  const setField = (name) => (event) => {
+    setForm((current) => ({ ...current, [name]: event.target.value }));
+    if (formErrors[name]) setFormErrors((current) => ({ ...current, [name]: '' }));
+  };
+
+  const setVariantField = (name) => (event) => {
+    setVariantForm((current) => ({ ...current, [name]: event.target.value }));
+    if (variantErrors[name]) setVariantErrors((current) => ({ ...current, [name]: '' }));
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-      {/* Toast Notification */}
-      {toastMessage && (
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '10px 16px',
-            backgroundColor: 'var(--status-success-bg)',
-            color: 'var(--status-success-text)',
-            borderRadius: 'var(--radius-sm)',
-            fontSize: 'var(--font-size-body)',
-            fontWeight: 'var(--font-weight-medium)',
-            border: '1px solid var(--color-primary)',
-          }}
-        >
-          <CheckCircle2 size={18} />
-          <span>{toastMessage}</span>
+    <div>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', marginBottom: 'var(--space-6)' }}>
+        <div>
+          <h1 style={{ fontSize: 'var(--font-size-heading)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--color-secondary)', letterSpacing: '-0.02em' }}>
+            Products
+          </h1>
+          <p style={{ color: 'var(--color-text-secondary)', marginTop: '4px' }}>
+            Products and their variants. A variant's price extra is added to the sale price for every seat.
+          </p>
+        </div>
+        {canManageCatalog && editing === null && (
+          <button type="button" className="btn btn-primary" onClick={openNew}>
+            New product
+          </button>
+        )}
+      </div>
+
+      {notice && (
+        <div style={{ marginBottom: 'var(--space-4)' }}>
+          <Notice tone={notice.tone}>{notice.text}</Notice>
+        </div>
+      )}
+      {!canManageCatalog && (
+        <div style={{ marginBottom: 'var(--space-4)' }}>
+          <Notice tone="success">You can view products. Admins and staff can change them.</Notice>
         </div>
       )}
 
-      {/* 1. Header Section */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: 'var(--space-4)',
-        }}
-      >
-        <div>
-          <h1
-            style={{
-              fontSize: 'var(--font-size-heading-main)',
-              fontWeight: 'var(--font-weight-semibold)',
-              color: 'var(--color-secondary)',
-              letterSpacing: '-0.02em',
-              marginBottom: '4px',
-            }}
-          >
-            Products
-          </h1>
-          <p
-            style={{
-              fontSize: 'var(--font-size-body)',
-              color: 'var(--color-text-secondary)',
-            }}
-          >
-            Manage recurring subscription items, software services, and hardware packages.
-          </p>
-        </div>
-
-        <button
-          type="button"
-          onClick={handleOpenAdd}
-          className="btn btn-primary"
-        >
-          <Plus size={18} />
-          <span>Add Product</span>
-        </button>
-      </div>
-
-      {/* 2. Top Metric Cards */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-          gap: 'var(--space-4)',
-        }}
-      >
-        <div className="card-surface" style={{ padding: 'var(--space-5)' }}>
-          <span style={{ fontSize: 'var(--font-size-metric-label)', color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 'var(--font-weight-medium)' }}>
-            Total Catalog Items
-          </span>
-          <div style={{ fontSize: 'var(--font-size-metric-value)', fontWeight: 'var(--font-weight-bold)', color: 'var(--color-secondary)', marginTop: '6px' }}>
-            {products.length}
-          </div>
-        </div>
-
-        <div className="card-surface" style={{ padding: 'var(--space-5)' }}>
-          <span style={{ fontSize: 'var(--font-size-metric-label)', color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 'var(--font-weight-medium)' }}>
-            Active Products
-          </span>
-          <div style={{ fontSize: 'var(--font-size-metric-value)', fontWeight: 'var(--font-weight-bold)', color: 'var(--color-primary)', marginTop: '6px' }}>
-            {activeProductsCount}
-          </div>
-        </div>
-
-        <div className="card-surface" style={{ padding: 'var(--space-5)' }}>
-          <span style={{ fontSize: 'var(--font-size-metric-label)', color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 'var(--font-weight-medium)' }}>
-            Configured Variants
-          </span>
-          <div style={{ fontSize: 'var(--font-size-metric-value)', fontWeight: 'var(--font-weight-bold)', color: 'var(--color-secondary)', marginTop: '6px' }}>
-            {totalVariantsCount}
-          </div>
-        </div>
-      </div>
-
-      {/* 3. Search and Filters Toolbar */}
-      <div
-        className="card-surface"
-        style={{
-          padding: 'var(--space-4) var(--space-5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: 'var(--space-3)',
-        }}
-      >
-        {/* Search */}
-        <div style={{ flex: '1 1 280px', maxWidth: '420px' }}>
-          <div className="search-input-wrapper">
-            <Search size={16} style={{ color: 'var(--color-text-secondary)' }} />
-            <input
-              type="text"
-              className="search-input"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search products by name or notes..."
-            />
-          </div>
-        </div>
-
-        {/* Dropdown Filters */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
-          {/* Type Filter */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ fontSize: 'var(--font-size-helper)', color: 'var(--color-text-secondary)' }}>Type:</span>
-            <select
-              value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value)}
-              style={{
-                height: '42px',
-                padding: '8px 12px',
-                fontSize: 'var(--font-size-body)',
-                color: 'var(--color-text-main)',
-                backgroundColor: 'var(--color-surface)',
-                border: '1px solid var(--color-border)',
-                borderRadius: 'var(--radius-sm)',
-                outline: 'none',
-                cursor: 'pointer',
-              }}
-            >
-              <option value="ALL">All Types</option>
-              {PRODUCT_TYPES.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Status Filter */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ fontSize: 'var(--font-size-helper)', color: 'var(--color-text-secondary)' }}>Status:</span>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              style={{
-                height: '42px',
-                padding: '8px 12px',
-                fontSize: 'var(--font-size-body)',
-                color: 'var(--color-text-main)',
-                backgroundColor: 'var(--color-surface)',
-                border: '1px solid var(--color-border)',
-                borderRadius: 'var(--radius-sm)',
-                outline: 'none',
-                cursor: 'pointer',
-              }}
-            >
-              <option value="ALL">All Statuses</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </select>
-          </div>
-
-          {/* Reset */}
-          {(searchTerm || typeFilter !== 'ALL' || statusFilter !== 'ALL') && (
-            <button
-              type="button"
-              onClick={handleResetFilters}
-              className="btn btn-secondary"
-              style={{ padding: '8px 12px' }}
-              title="Reset all search and filter conditions"
-            >
-              <RotateCcw size={14} />
-              <span>Reset</span>
-            </button>
+      {editing !== null && (
+        <form className="card-surface" style={panelStyle} onSubmit={handleProductSubmit} noValidate>
+          <h2 style={sectionTitleStyle}>{editing === 'new' ? 'New product' : 'Edit product'}</h2>
+          {formError && (
+            <div style={{ marginBottom: 'var(--space-4)' }}>
+              <Notice>{formError}</Notice>
+            </div>
           )}
-        </div>
-      </div>
+          <div style={formGridStyle}>
+            <FormField label="Name" htmlFor="product-name" error={formErrors.name}>
+              <TextInput id="product-name" value={form.name} onChange={setField('name')} error={formErrors.name} />
+            </FormField>
+            <FormField label="Type" htmlFor="product-type" error={formErrors.type} hint="For example, SERVICE or HARDWARE">
+              <TextInput id="product-type" value={form.type} onChange={setField('type')} error={formErrors.type} />
+            </FormField>
+            <FormField label="Sale price (per seat)" htmlFor="product-sale" error={formErrors.sale_price}>
+              <TextInput id="product-sale" inputMode="decimal" placeholder="100.00" value={form.sale_price} onChange={setField('sale_price')} error={formErrors.sale_price} />
+            </FormField>
+            <FormField label="Cost price" htmlFor="product-cost" error={formErrors.cost_price} hint="Optional">
+              <TextInput id="product-cost" inputMode="decimal" placeholder="40.00" value={form.cost_price} onChange={setField('cost_price')} error={formErrors.cost_price} />
+            </FormField>
+          </div>
+          <div style={{ marginTop: 'var(--space-4)' }}>
+            <FormField label="Notes" htmlFor="product-notes" error={formErrors.notes}>
+              <TextArea id="product-notes" value={form.notes} onChange={setField('notes')} error={formErrors.notes} />
+            </FormField>
+          </div>
+          <div style={{ display: 'flex', gap: '8px', marginTop: 'var(--space-4)' }}>
+            <button type="submit" className="btn btn-primary" disabled={saving}>
+              {saving ? 'Saving…' : 'Save product'}
+            </button>
+            <button type="button" className="btn btn-secondary" onClick={closeForm} disabled={saving}>
+              Cancel
+            </button>
+          </div>
+        </form>
+      )}
 
-      {/* 4. Products Table */}
-      <div className="card-surface" style={{ overflow: 'hidden' }}>
-        <div className="table-container" style={{ border: 'none', borderRadius: 0 }}>
-          <table className="fintech-table">
-            <thead>
+      {loadError && (
+        <div style={{ marginBottom: 'var(--space-4)' }}>
+          <Notice>{loadError}</Notice>
+        </div>
+      )}
+
+      <div className="table-container card-surface">
+        <table className="fintech-table" style={{ width: '100%' }}>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Sale price</th>
+              <th>Variants</th>
+              <th aria-label="Actions" />
+            </tr>
+          </thead>
+          <tbody>
+            {products.length === 0 && (
               <tr>
-                <th>Product Name</th>
-                <th>Product Type</th>
-                <th>Sales Price</th>
-                <th>Cost Price</th>
-                <th>Variants</th>
-                <th>Status</th>
-                <th style={{ textAlign: 'right' }}>Actions</th>
+                <td colSpan={5} style={{ color: 'var(--color-text-secondary)' }}>
+                  No products yet.
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {filteredProducts.length === 0 ? (
-                <tr>
-                  <td colSpan={7} style={{ textAlign: 'center', padding: 'var(--space-10) var(--space-4)' }}>
-                    <div
-                      style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: 'var(--space-2)',
-                      }}
-                    >
-                      <Package size={36} style={{ color: 'var(--color-text-secondary)', opacity: 0.5 }} />
-                      <div
-                        style={{
-                          fontSize: 'var(--font-size-heading-card)',
-                          fontWeight: 'var(--font-weight-semibold)',
-                          color: 'var(--color-secondary)',
-                        }}
-                      >
-                        No products match your criteria
-                      </div>
-                      <p style={{ fontSize: 'var(--font-size-helper)', color: 'var(--color-text-secondary)', maxWidth: '380px' }}>
-                        {searchTerm || typeFilter !== 'ALL' || statusFilter !== 'ALL'
-                          ? 'Try clearing your filters or search keywords to view the catalog.'
-                          : 'No products exist in your catalog yet. Create your first product to get started.'}
-                      </p>
-                      {searchTerm || typeFilter !== 'ALL' || statusFilter !== 'ALL' ? (
-                        <button
-                          type="button"
-                          onClick={handleResetFilters}
-                          className="btn btn-secondary"
-                          style={{ marginTop: 'var(--space-3)' }}
-                        >
-                          Clear Filters
+            )}
+            {products.map((product) => {
+              const expanded = expandedId === product.id;
+              return [
+                <tr key={product.id}>
+                  <td>{product.name}</td>
+                  <td>{product.type ?? '—'}</td>
+                  <td>{product.sale_price}</td>
+                  <td>{product.variants ? product.variants.length : '—'}</td>
+                  <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
+                    <button type="button" className="btn btn-secondary" onClick={() => toggleExpanded(product.id)} aria-expanded={expanded}>
+                      {expanded ? 'Hide variants' : 'Variants'}
+                    </button>
+                    {canManageCatalog && (
+                      <>
+                        {' '}
+                        <button type="button" className="btn btn-secondary" onClick={() => openEdit(product)}>
+                          Edit
+                        </button>{' '}
+                        <button type="button" className="btn btn-secondary" onClick={() => handleDelete(product)}>
+                          Delete
                         </button>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={handleOpenAdd}
-                          className="btn btn-primary"
-                          style={{ marginTop: 'var(--space-3)' }}
-                        >
-                          <Plus size={16} />
-                          <span>Add New Product</span>
-                        </button>
-                      )}
-                    </div>
+                      </>
+                    )}
                   </td>
-                </tr>
-              ) : (
-                filteredProducts.map((prod) => {
-                  const hasOdooVariant = prod.variants?.some((v) =>
-                    v.name.toLowerCase().includes('odoo')
-                  );
-
-                  return (
-                    <tr key={prod.id}>
-                      {/* Product Name */}
-                      <td>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                          <span style={{ fontWeight: 'var(--font-weight-semibold)', color: 'var(--color-secondary)', fontSize: 'var(--font-size-table-content)' }}>
-                            {prod.name}
-                          </span>
-                          {prod.notes && (
-                            <span
-                              style={{
-                                fontSize: 'var(--font-size-helper)',
-                                color: 'var(--color-text-secondary)',
-                                maxWidth: '320px',
-                                whiteSpace: 'nowrap',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                              }}
-                            >
-                              {prod.notes}
+                </tr>,
+                expanded && (
+                  <tr key={`${product.id}-variants`}>
+                    <td colSpan={5} style={{ background: 'var(--color-surface-green)' }}>
+                      <div style={{ padding: 'var(--space-2) 0' }}>
+                        <h3 style={{ ...sectionTitleStyle, fontSize: '14px', marginBottom: 'var(--space-2)' }}>Variants</h3>
+                        {variantError && (
+                          <div style={{ marginBottom: 'var(--space-3)' }}>
+                            <Notice>{variantError}</Notice>
+                          </div>
+                        )}
+                        {product.variants?.length === 0 && (
+                          <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-3)' }}>
+                            No variants yet. Add one below, then plans can use it.
+                          </p>
+                        )}
+                        {product.variants?.map((variant) => (
+                          <div key={variant.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '6px 0', borderBottom: '1px solid var(--color-border-subtle)' }}>
+                            <span style={{ flex: 1 }}>
+                              <strong>{variant.attribute}:</strong> {variant.value}
                             </span>
-                          )}
-                        </div>
-                      </td>
-
-                      {/* Product Type */}
-                      <td>
-                        <span
-                          style={{
-                            fontSize: 'var(--font-size-helper)',
-                            fontWeight: 'var(--font-weight-medium)',
-                            color: 'var(--color-text-main)',
-                            backgroundColor: 'var(--color-background)',
-                            padding: '4px 10px',
-                            borderRadius: 'var(--radius-xs)',
-                            border: '1px solid var(--color-border)',
-                          }}
-                        >
-                          {prod.type}
-                        </span>
-                      </td>
-
-                      {/* Sales Price */}
-                      <td style={{ fontWeight: 'var(--font-weight-semibold)', color: 'var(--color-secondary)', fontSize: 'var(--font-size-table-content)' }}>
-                        {productService.formatCurrency(prod.salesPrice)}
-                      </td>
-
-                      {/* Cost Price */}
-                      <td style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-table-content)' }}>
-                        {productService.formatCurrency(prod.costPrice)}
-                      </td>
-
-                      {/* Variants */}
-                      <td>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span
-                            style={{
-                              fontSize: 'var(--font-size-badge)',
-                              fontWeight: 'var(--font-weight-semibold)',
-                              color: prod.variants?.length > 0 ? 'var(--color-primary)' : 'var(--color-text-secondary)',
-                              backgroundColor: prod.variants?.length > 0 ? 'var(--color-surface-green)' : '#F1F3F2',
-                              padding: '3px 9px',
-                              borderRadius: 'var(--radius-xs)',
-                            }}
-                          >
-                            {prod.variants?.length || 0} variant{prod.variants?.length === 1 ? '' : 's'}
-                          </span>
-                          {hasOdooVariant && (
-                            <span
-                              title="Includes Odoo Sync Variant (+₹560)"
-                              style={{
-                                fontSize: 'var(--font-size-badge)',
-                                fontWeight: 'var(--font-weight-semibold)',
-                                color: '#087A4B',
-                                border: '1px solid #087A4B',
-                                padding: '2px 6px',
-                                borderRadius: '2px',
-                                backgroundColor: '#E9F3ED',
-                              }}
-                            >
-                              Odoo +₹560
+                            <span>+{variant.price_extra}</span>
+                            <span style={{ color: 'var(--color-text-secondary)' }}>
+                              unit {formatCents(toCents(product.sale_price) + toCents(variant.price_extra))}
                             </span>
-                          )}
-                        </div>
-                      </td>
+                            {canManageCatalog && (
+                              <button type="button" className="btn btn-secondary" onClick={() => handleRemoveVariant(variant)}>
+                                Remove
+                              </button>
+                            )}
+                          </div>
+                        ))}
 
-                      {/* Status */}
-                      <td>
-                        <span className={`status-badge ${prod.status === 'active' ? 'success' : 'pending'}`}>
-                          {prod.status === 'active' ? 'Active' : 'Inactive'}
-                        </span>
-                      </td>
-
-                      {/* Actions */}
-                      <td style={{ textAlign: 'right' }}>
-                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                          <button
-                            type="button"
-                            onClick={() => handleOpenView(prod)}
-                            title="View product details"
-                            className="btn-icon"
-                            style={{ width: '32px', height: '32px' }}
-                          >
-                            <Eye size={16} />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleOpenEdit(prod)}
-                            title="Edit product"
-                            className="btn-icon"
-                            style={{ width: '32px', height: '32px' }}
-                          >
-                            <Edit2 size={16} />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleOpenDelete(prod)}
-                            title="Delete product"
-                            className="btn-icon"
-                            style={{ width: '32px', height: '32px', color: 'var(--status-overdue-text)' }}
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+                        {canManageCatalog && (
+                          <form onSubmit={(event) => handleAddVariant(event, product.id)} noValidate style={{ marginTop: 'var(--space-4)' }}>
+                            <div style={formGridStyle}>
+                              <FormField label="Attribute" htmlFor={`va-${product.id}`} error={variantErrors.attribute} hint="For example, Brand">
+                                <TextInput id={`va-${product.id}`} value={variantForm.attribute} onChange={setVariantField('attribute')} error={variantErrors.attribute} />
+                              </FormField>
+                              <FormField label="Value" htmlFor={`vv-${product.id}`} error={variantErrors.value} hint="For example, Odoo">
+                                <TextInput id={`vv-${product.id}`} value={variantForm.value} onChange={setVariantField('value')} error={variantErrors.value} />
+                              </FormField>
+                              <FormField label="Price extra" htmlFor={`vp-${product.id}`} error={variantErrors.price_extra} hint="Added per seat. Blank means 0.00">
+                                <TextInput id={`vp-${product.id}`} inputMode="decimal" placeholder="560.00" value={variantForm.price_extra} onChange={setVariantField('price_extra')} error={variantErrors.price_extra} />
+                              </FormField>
+                            </div>
+                            <button type="submit" className="btn btn-primary" style={{ marginTop: 'var(--space-3)' }}>
+                              Add variant
+                            </button>
+                          </form>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ),
+              ];
+            })}
+          </tbody>
+        </table>
       </div>
-
-      {/* Modals */}
-      <ProductModal
-        isOpen={isFormModalOpen}
-        onClose={() => setIsFormModalOpen(false)}
-        onSave={handleSaveProduct}
-        initialData={formInitialData}
-      />
-
-      <ProductViewModal
-        isOpen={isViewModalOpen}
-        onClose={() => setIsViewModalOpen(false)}
-        product={viewProduct}
-        onEdit={(prod) => {
-          setIsViewModalOpen(false);
-          handleOpenEdit(prod);
-        }}
-      />
-
-      <DeleteConfirmModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleConfirmDelete}
-        itemTitle={deletingProduct?.name || ''}
-      />
+      <ListPager meta={meta} onPage={loadProducts} />
     </div>
   );
+}
+
+// Maps a 422 response's per-field details onto the form, and shows other errors as a banner.
+function applyServerErrors(err, setFieldErrors, setBanner) {
+  if (err instanceof ApiError && err.status === 422 && Object.keys(err.details).length > 0) {
+    setFieldErrors(err.details);
+    setBanner('Please fix the highlighted fields.');
+    return;
+  }
+  setBanner(err.message);
 }
