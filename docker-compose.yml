@@ -48,6 +48,8 @@ services:
       - "${API_PORT:-8000}:${API_PORT:-8000}"
     volumes:
       - ./backend:/app
+      # Shared billing rules, imported by backend/src/billing.js as ../../packages/billing.
+      - ./packages:/packages
       - api_node_modules:/app/node_modules
 
   web:

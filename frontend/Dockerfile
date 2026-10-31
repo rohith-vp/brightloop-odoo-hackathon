@@ -18,6 +18,9 @@ RUN npm ci
 
 COPY . .
 
+# Syncs node_modules with the lockfile on every start (see docker-entrypoint.sh).
+ENTRYPOINT ["sh", "./docker-entrypoint.sh"]
+
 EXPOSE 5173
 
 # --host 0.0.0.0 lets the port mapping reach the dev server from outside the container.

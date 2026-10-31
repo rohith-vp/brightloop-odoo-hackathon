@@ -319,29 +319,32 @@ Suggested list filters: `status`, `customer_id`, `plan_id`.
 
 ## 5. Invoices and batch billing
 
-  ---------------------------------------------------------------------------------
-  Method            Endpoint                  Purpose             Access
-  ----------------- ------------------------- ------------------- -----------------
-  `GET`             `/invoices`               List invoices;      Admin/Staff
-                                              support pagination  
-                                              and filters         
+Invoices are created by the batch run. Statuses: `DRAFT`, `CONFIRMED`,
+`PAID`, `CANCELLED`. `PAID` is set by the payments module.
 
-  `GET`             `/invoices/{invoiceId}`   Get invoice details Admin/Staff;
-                                              and                 owner via portal
-                                              line/tax/discount   
-                                              breakdown           
+  ------------------------------------------------------------------------------------
+  Method            Endpoint                          Purpose              Access
+  ----------------- --------------------------------- -------------------- -----------
+  `GET`             `/invoices`                       List invoices. Filters: Admin/Staff
+                                                      `status`,
+                                                      `subscription_id`
 
-  `POST`            `/billing/run`            Generate invoices   Admin/Staff
-                                              for eligible Active 
-                                              subscriptions for a 
-                                              billing period      
-  ---------------------------------------------------------------------------------
+  `GET`             `/invoices/{invoiceId}`           Get one invoice      Admin/Staff
+
+  `POST`            `/invoices/{invoiceId}/confirm`   DRAFT -> CONFIRMED   Admin/Staff
+
+  `POST`            `/invoices/{invoiceId}/cancel`    DRAFT or CONFIRMED   Admin/Staff
+                                                      -> CANCELLED
+
+  `POST`            `/billing/run`                    Create every invoice Admin/Staff
+                                                      due as of a date
+  ------------------------------------------------------------------------------------
 
 ### Batch billing request
 
 ``` json
 {
-  "billing_period": "2026-10"
+  "as_of": "2026-10-15"
 }
 ```
 
@@ -350,62 +353,91 @@ Suggested list filters: `status`, `customer_id`, `plan_id`.
 ``` json
 {
   "data": {
-    "billing_period": "2026-10",
+    "as_of": "2026-10-15",
     "created_count": 1,
     "skipped_count": 0,
     "invoices": [
       {
-        "id": "inv_001",
-        "subscription_id": "sub_001",
-        "billing_period": "2026-10",
-        "status": "UNPAID",
-        "subtotal": "300.00",
-        "discount_amount": "0.00",
-        "tax_amount": "30.00",
-        "total": "330.00",
-        "amount_paid": "0.00",
-        "balance_due": "330.00",
-        "due_date": "2026-10-15"
+        "id": "...",
+        "number": "INV-000001",
+        "subscription_id": "...",
+        "period_start": "2026-10-01",
+        "period_end": "2026-11-01",
+        "total": "330.00"
       }
     ]
   }
 }
 ```
 
-The generator must be safe to run more than once. Enforce a unique
-`(subscription_id, billing_period)` pair in the database. A repeated run
-must not create duplicate invoices. Invoice creation and discount usage
-updates should be atomic.
+How a run works:
 
-Suggested invoice list filters: `status`, `customer_id`,
-`subscription_id`, `billing_period`, `due_date_from`, `due_date_to`,
-`overdue`.
+-   Only `ACTIVE` subscriptions whose start date is on or before `as_of`
+    are considered.
+-   Each subscription is billed for every period that has started by
+    `as_of` and is not yet invoiced. A missed run catches up on the next
+    run, so nothing is skipped.
+-   A period starting on or after the subscription's `expiry_date` is
+    not billed.
+-   All invoices in a run are created in one database transaction. If any
+    step fails, none are kept.
+-   A subscription with nothing due counts toward `skipped_count`.
+-   Running again for the same date creates nothing new. The database
+    enforces one invoice per `(subscription_id, period_start)`, and runs
+    take a lock so concurrent requests cannot both create the same invoice.
+
+### Invoice amounts
+
+Each invoice stores quantity, unit price, subtotal, discount (0.00 until
+the discount engine exists), tax rate, tax amount, and total. Tax is
+calculated on the taxable amount, rounded half up to the cent. See
+`docs/billing-rules.md` section 5.
+
+Invoice due date: the period start plus the subscription's
+`payment_terms_days` (default 15).
+
+## 4a. Subscription lifecycle (reference)
+
+Subscriptions move through these actions. Each route is
+`POST /subscriptions/{subscriptionId}/{action}`, and returns 409
+`INVALID_TRANSITION` for any action the current state does not allow.
+
+  ----------------------------------------------------
+  From        Action        To
+  ----------- ------------- ----------------------------
+  DRAFT       `confirm`     CONFIRMED
+
+  CONFIRMED   `activate`    ACTIVE
+
+  ACTIVE      `close`       CLOSED
+  ----------------------------------------------------
+
+CLOSED is final. The database and the state machine both enforce this.
 
 ## 6. Discount rules
 
-  ----------------------------------------------------------------------------------
-  Method            Endpoint                     Purpose           Access
-  ----------------- ---------------------------- ----------------- -----------------
-  `GET`             `/discount-rules`            List discount     Admin
-                                                 rules             
+Admins only. A rule gives a percentage off the gross line amount
+(quantity x unit price). Discount rule endpoints are under
+`/api/discount-rules`.
 
-  `POST`            `/discount-rules`            Create a          Admin
-                                                 percentage        
-                                                 discount rule     
+  ------------------------------------------------------------------------------
+  Method            Endpoint                       Purpose
+  ----------------- ------------------------------ -----------------------------
+  `GET`             `/discount-rules`              List rules (paginated)
 
-  `GET`             `/discount-rules/{ruleId}`   Get rule details  Admin
+  `POST`            `/discount-rules`              Create a rule
 
-  `PATCH`           `/discount-rules/{ruleId}`   Update rule       Admin
-                                                 configuration or  
-                                                 enabled state     
-  ----------------------------------------------------------------------------------
+  `GET`             `/discount-rules/{ruleId}`     Get one rule, with times_used
+
+  `PATCH`           `/discount-rules/{ruleId}`     Change given fields, including
+                                                   `enabled`
+  ------------------------------------------------------------------------------
 
 ### Create discount rule request
 
 ``` json
 {
   "name": "Three-seat discount",
-  "discount_type": "PERCENT",
   "value": "10.00",
   "minimum_quantity": 3,
   "starts_on": "2026-10-01",
@@ -415,11 +447,34 @@ Suggested invoice list filters: `status`, `customer_id`,
 }
 ```
 
-The discount engine applies eligible rules automatically during invoice
-generation. Eligibility depends on minimum quantity, date window,
-enabled state, and remaining usage. The invoice response should expose
-the applied rule and discount amount so the frontend can show the
-calculation.
+`ends_on` and `usage_limit` may be `null`. `minimum_quantity` defaults to 1,
+and `enabled` defaults to `true`. `value` is above 0 and at most 100.
+
+### How a rule is applied
+
+A rule applies to an invoice only when all of these hold:
+
+-   The rule is enabled.
+-   The subscription quantity is at or above `minimum_quantity`.
+-   The invoice's billing date falls inside the window
+    `starts_on` to `ends_on`, both inclusive. The billing date is the
+    period start.
+-   The rule has uses left (`times_used` is below `usage_limit`).
+
+Rules do not stack. When several rules are eligible, the highest
+percentage applies. On a tie, the earliest-created rule wins.
+
+The discount is applied when the batch run creates an invoice, and it
+is not retroactive. The invoice records `discount_rule_id`,
+`discount_percent`, and `discount_amount`. Tax is calculated on the
+discounted amount. For 3 seats at 100.00 with 10% off and 10% tax, the
+total is 297.00.
+
+`times_used` goes up in the same transaction that creates the invoice.
+A run that fails therefore uses nothing. Re-running for the same date
+does not use the discount again.
+
+A `PATCH` cannot set `usage_limit` below `times_used`; that returns 422.
 
 ## 7. Payments
 
@@ -458,7 +513,7 @@ calculation.
     "method": "CASH"
   },
   "meta": {
-    "invoice_status": "UNPAID",
+    "invoice_status": "CONFIRMED",
     "amount_paid": "100.00",
     "balance_due": "230.00",
     "overdue": true
@@ -535,7 +590,7 @@ another customer's records in the frontend is not sufficient.
                                                                invoices          
   ------------------------------------------------------------------------------------------------
 
-Suggested portal invoice filters: `status`, `billing_period`.
+Suggested portal invoice filters: `status`, `period_start`.
 
 ## 10. Frontend mock checklist
 
