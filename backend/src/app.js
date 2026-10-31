@@ -1,9 +1,10 @@
 import express from 'express';
 import cors from 'cors';
 import { healthRouter } from './routes/health.js';
+import { authRouter } from './routes/auth.js';
 
 // Builds the Express app. The database is passed in so tests can supply a fake.
-export function createApp({ db, corsOrigins = [] }) {
+export function createApp({ db, corsOrigins = [], jwtSecret })  {
   const app = express();
   app.disable('x-powered-by');
 
@@ -11,6 +12,7 @@ export function createApp({ db, corsOrigins = [] }) {
   app.use(express.json({ limit: '100kb' }));
 
   app.use('/api', healthRouter({ db }));
+  app.use('/api', authRouter({ db, jwtSecret }));
 
   // Unknown routes return the same error shape as the rest of the API (docs/api.md).
   app.use((req, res) => {

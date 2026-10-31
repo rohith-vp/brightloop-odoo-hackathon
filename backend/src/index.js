@@ -4,7 +4,11 @@ import { createApp } from './app.js';
 
 const config = loadConfig();
 const db = createDb(config.databaseUrl);
-const app = createApp({ db, corsOrigins: config.corsOrigins });
+const app = createApp({
+  db,
+  corsOrigins: config.corsOrigins,
+  jwtSecret: config.jwtSecret,
+});
 
 const server = app.listen(config.port, config.host, () => {
   console.log(`API listening on http://${config.host}:${config.port}/api (${config.env})`);
