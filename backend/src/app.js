@@ -10,6 +10,7 @@ import { subscriptionsRouter } from './routes/subscriptions.js';
 import { invoicesRouter } from './routes/invoices.js';
 import { billingRouter } from './routes/billing.js';
 import { taxesRouter } from './routes/taxes.js';
+import { discountsRouter } from './routes/discounts.js';
 import { ApiError, translateDbError } from './errors.js';
 
 // Default authentication: attaches no user, so protected routes return 401.
@@ -44,6 +45,7 @@ export function createApp({
   app.use('/api/invoices', invoicesRouter({ db }));
   app.use('/api/billing', billingRouter({ db }));
   app.use('/api/taxes', taxesRouter({ db }));
+  app.use('/api/discount-rules', discountsRouter({ db }));
 
   // Unknown routes return the same error shape as the rest of the API.
   app.use((req, res) => {

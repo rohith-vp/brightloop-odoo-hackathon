@@ -16,8 +16,16 @@ export const INVOICE_COLUMNS = `
   to_char(i.period_end, 'YYYY-MM-DD') AS period_end,
   to_char(i.issue_date, 'YYYY-MM-DD') AS issue_date,
   to_char(i.due_date, 'YYYY-MM-DD') AS due_date,
-  i.description, i.quantity, i.unit_price, i.subtotal, i.discount_amount,
+  i.description, i.quantity, i.unit_price, i.subtotal,
+  i.discount_rule_id, i.discount_percent, i.discount_amount,
   i.tax_rate_percent, i.tax_amount, i.total, i.created_at, i.updated_at`;
+
+// Discount rules, with dates read as text (see the note above).
+export const DISCOUNT_COLUMNS = `
+  d.id, d.name, d.value::text AS value, d.minimum_quantity,
+  to_char(d.starts_on, 'YYYY-MM-DD') AS starts_on,
+  to_char(d.ends_on, 'YYYY-MM-DD') AS ends_on,
+  d.usage_limit, d.times_used, d.enabled, d.created_at, d.updated_at`;
 
 export async function findSubscription(db, id) {
   if (!isUuid(id)) throw notFound('Subscription');
