@@ -31,8 +31,7 @@ export default function CustomerInvoicesPage() {
     }
     setCurrentUser(user);
 
-    const customerId = user.customerId || 'cust_1';
-    const list = invoiceService.getInvoicesByCustomer(customerId);
+    const list = invoiceService.getMyInvoices();
     setInvoices(list);
   };
 

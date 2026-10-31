@@ -10,6 +10,9 @@ import QuotationsPage from './pages/QuotationsPage';
 import InvoicesPage from './pages/InvoicesPage';
 import PaymentsPage from './pages/PaymentsPage';
 import DiscountsPage from './pages/DiscountsPage';
+import CustomersPage from './pages/CustomersPage';
+import ReportsPage from './pages/ReportsPage';
+import SettingsPage from './pages/SettingsPage';
 import CustomerLayout from './layouts/CustomerLayout';
 import CustomerDashboardPage from './pages/portal/CustomerDashboardPage';
 import CustomerSubscriptionsPage from './pages/portal/CustomerSubscriptionsPage';
@@ -105,18 +108,9 @@ export default function App() {
           <Route path="discounts" element={<DiscountsPage />} />
 
           {/* Management */}
-          <Route
-            path="customers"
-            element={<PlaceholderPage title="Customers" description="Customer directory, account contacts, billing details, and subscription histories." />}
-          />
-          <Route
-            path="reports"
-            element={<PlaceholderPage title="Reports" description="Financial analytics, churn modeling, cohort retention, and MRR growth tracking." />}
-          />
-          <Route
-            path="settings"
-            element={<PlaceholderPage title="Settings" description="System configurations, webhook endpoints, payment gateway keys, and organization profiles." />}
-          />
+          <Route path="customers" element={<CustomersPage />} />
+          <Route path="reports" element={<ReportsPage />} />
+          <Route path="settings" element={<SettingsPage />} />
 
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />

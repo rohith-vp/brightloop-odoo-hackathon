@@ -178,6 +178,258 @@ const INITIAL_INVOICES = [
     createdAt: '2026-08-01T10:00:00Z',
     updatedAt: '2026-08-16T00:00:00Z',
   },
+  {
+    id: 'inv_alice_1',
+    invoiceNumber: 'INV-ALICE-001',
+    customerId: 'CUST001',
+    customer: {
+      id: 'CUST001',
+      name: 'Alice',
+      email: 'alice@example.com',
+      company: 'Alice Enterprises',
+    },
+    subscriptionId: 'sub_alice_1',
+    subscriptionNumber: 'SUB-ALICE-001',
+    billingPeriod: {
+      startDate: '2026-10-01',
+      endDate: '2026-10-31',
+    },
+    invoiceDate: '2026-10-01',
+    dueDate: '2026-10-15',
+    items: [
+      {
+        id: 'item_al_101',
+        productId: 'prod_1',
+        productName: 'Odoo Subscription Connector',
+        planId: 'plan_1',
+        planName: 'Odoo Connector - Monthly Business',
+        quantity: 1,
+        unitPrice: 4999,
+        lineTotal: 4999,
+      },
+    ],
+    subtotal: 4999,
+    discountAmount: 0,
+    taxRate: 18,
+    taxAmount: 899.82,
+    grandTotal: 5898.82,
+    amountPaid: 5898.82,
+    balanceDue: 0,
+    status: 'Paid',
+    notes: 'Paid in full via Bank Wire.',
+    createdAt: '2026-10-01T10:00:00Z',
+    updatedAt: '2026-10-05T12:00:00Z',
+  },
+  {
+    id: 'inv_alice_2',
+    invoiceNumber: 'INV-ALICE-002',
+    customerId: 'CUST001',
+    customer: {
+      id: 'CUST001',
+      name: 'Alice',
+      email: 'alice@example.com',
+      company: 'Alice Enterprises',
+    },
+    subscriptionId: 'sub_alice_2',
+    subscriptionNumber: 'SUB-ALICE-002',
+    billingPeriod: {
+      startDate: '2026-10-15',
+      endDate: '2026-11-14',
+    },
+    invoiceDate: '2026-10-15',
+    dueDate: '2026-11-15',
+    items: [
+      {
+        id: 'item_al_201',
+        productId: 'prod_2',
+        productName: 'Cloud Infrastructure Monitoring Daemon',
+        planId: 'plan_3',
+        planName: 'Cloud Daemon - Growth Tier',
+        quantity: 1,
+        unitPrice: 3499,
+        lineTotal: 3499,
+      },
+    ],
+    subtotal: 3499,
+    discountAmount: 0,
+    taxRate: 18,
+    taxAmount: 629.82,
+    grandTotal: 4128.82,
+    amountPaid: 0,
+    balanceDue: 4128.82,
+    status: 'Confirmed',
+    notes: 'Upcoming November cycle invoice.',
+    createdAt: '2026-10-15T10:00:00Z',
+    updatedAt: '2026-10-15T10:00:00Z',
+  },
+  {
+    id: 'inv_bob_1',
+    invoiceNumber: 'INV-BOB-001',
+    customerId: 'CUST002',
+    customer: {
+      id: 'CUST002',
+      name: 'Bob',
+      email: 'bob@example.com',
+      company: 'Bob Retail Logistics',
+    },
+    subscriptionId: 'sub_bob_1',
+    subscriptionNumber: 'SUB-BOB-001',
+    billingPeriod: {
+      startDate: '2026-09-01',
+      endDate: '2026-09-30',
+    },
+    invoiceDate: '2026-09-01',
+    dueDate: '2026-09-15',
+    items: [
+      {
+        id: 'item_bob_101',
+        productId: 'prod_4',
+        productName: 'Smart POS Terminal V2',
+        planId: 'plan_5',
+        planName: 'POS Terminal - Hardware Lease Monthly',
+        quantity: 1,
+        unitPrice: 1899,
+        lineTotal: 1899,
+      },
+    ],
+    subtotal: 1899,
+    discountAmount: 0,
+    taxRate: 18,
+    taxAmount: 341.82,
+    grandTotal: 2240.82,
+    amountPaid: 2240.82,
+    balanceDue: 0,
+    status: 'Paid',
+    notes: 'September terminal lease settled.',
+    createdAt: '2026-09-01T10:00:00Z',
+    updatedAt: '2026-09-10T12:00:00Z',
+  },
+  {
+    id: 'inv_bob_2',
+    invoiceNumber: 'INV-BOB-002',
+    customerId: 'CUST002',
+    customer: {
+      id: 'CUST002',
+      name: 'Bob',
+      email: 'bob@example.com',
+      company: 'Bob Retail Logistics',
+    },
+    subscriptionId: 'sub_bob_2',
+    subscriptionNumber: 'SUB-BOB-002',
+    billingPeriod: {
+      startDate: '2026-10-01',
+      endDate: '2027-10-01',
+    },
+    invoiceDate: '2026-10-01',
+    dueDate: '2026-11-15',
+    items: [
+      {
+        id: 'item_bob_201',
+        productId: 'prod_1',
+        productName: 'Odoo Subscription Connector',
+        planId: 'plan_2',
+        planName: 'Odoo Connector - Enterprise Annual',
+        quantity: 1,
+        unitPrice: 49999,
+        lineTotal: 49999,
+      },
+    ],
+    subtotal: 49999,
+    discountAmount: 0,
+    taxRate: 18,
+    taxAmount: 8999.82,
+    grandTotal: 58998.82,
+    amountPaid: 20000,
+    balanceDue: 38998.82,
+    status: 'Partially Paid',
+    notes: 'Annual license invoice - first tranche received.',
+    createdAt: '2026-10-01T10:00:00Z',
+    updatedAt: '2026-10-15T12:00:00Z',
+  },
+  {
+    id: 'inv_charlie_1',
+    invoiceNumber: 'INV-CHARLIE-001',
+    customerId: 'CUST003',
+    customer: {
+      id: 'CUST003',
+      name: 'Charlie',
+      email: 'charlie@example.com',
+      company: 'Charlie Tech Labs',
+    },
+    subscriptionId: 'sub_charlie_1',
+    subscriptionNumber: 'SUB-CHARLIE-001',
+    billingPeriod: {
+      startDate: '2026-08-01',
+      endDate: '2026-08-31',
+    },
+    invoiceDate: '2026-08-01',
+    dueDate: '2026-08-15',
+    items: [
+      {
+        id: 'item_ch_101',
+        productId: 'prod_2',
+        productName: 'Cloud Infrastructure Monitoring Daemon',
+        planId: 'plan_3',
+        planName: 'Cloud Daemon - Starter Tier',
+        quantity: 1,
+        unitPrice: 1999,
+        lineTotal: 1999,
+      },
+    ],
+    subtotal: 1999,
+    discountAmount: 0,
+    taxRate: 18,
+    taxAmount: 359.82,
+    grandTotal: 2358.82,
+    amountPaid: 2358.82,
+    balanceDue: 0,
+    status: 'Paid',
+    notes: 'August monitoring settled via UPI.',
+    createdAt: '2026-08-01T10:00:00Z',
+    updatedAt: '2026-08-05T12:00:00Z',
+  },
+  {
+    id: 'inv_charlie_2',
+    invoiceNumber: 'INV-CHARLIE-002',
+    customerId: 'CUST003',
+    customer: {
+      id: 'CUST003',
+      name: 'Charlie',
+      email: 'charlie@example.com',
+      company: 'Charlie Tech Labs',
+    },
+    subscriptionId: 'sub_charlie_2',
+    subscriptionNumber: 'SUB-CHARLIE-002',
+    billingPeriod: {
+      startDate: '2026-08-01',
+      endDate: '2026-08-31',
+    },
+    invoiceDate: '2026-08-01',
+    dueDate: '2026-09-01',
+    items: [
+      {
+        id: 'item_ch_201',
+        productId: 'prod_1',
+        productName: 'Odoo Subscription Connector',
+        planId: 'plan_2',
+        planName: 'Odoo Connector - Enterprise Consulting',
+        quantity: 1,
+        unitPrice: 15000,
+        lineTotal: 15000,
+      },
+    ],
+    subtotal: 15000,
+    discountAmount: 0,
+    taxRate: 18,
+    taxAmount: 2700,
+    grandTotal: 17700,
+    amountPaid: 0,
+    balanceDue: 17700,
+    status: 'Overdue',
+    notes: 'Consulting pilot balance overdue.',
+    createdAt: '2026-08-01T10:00:00Z',
+    updatedAt: '2026-09-02T12:00:00Z',
+  },
 ];
 
 class InvoiceService {
@@ -269,6 +521,10 @@ class InvoiceService {
     return list.filter((i) => i.customerId === customerId || i.customer?.id === customerId);
   }
 
+  getInvoicesForCustomer(customerId) {
+    return this.getInvoicesByCustomer(customerId);
+  }
+
   getInvoiceForCustomer(id, customerId) {
     if (!customerId) throw new Error('Customer ID is required.');
     const inv = this.getInvoiceById(id);
@@ -277,6 +533,31 @@ class InvoiceService {
       throw new Error('Access denied: You do not have permission to view this invoice.');
     }
     return inv;
+  }
+
+  /* ----------------- SESSION-DERIVED CUSTOMER ACCESS ----------------- */
+
+  getAuthenticatedUser() {
+    try {
+      const stored = localStorage.getItem('brightloop_auth_user');
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  getMyInvoices() {
+    const user = this.getAuthenticatedUser();
+    if (!user) throw new Error('Unauthorized: No active session.');
+    const customerId = user.customerId || (user.role === 'customer' ? user.id : 'CUST001');
+    return this.getInvoicesByCustomer(customerId);
+  }
+
+  getMyInvoiceById(id) {
+    const user = this.getAuthenticatedUser();
+    if (!user) throw new Error('Unauthorized: No active session.');
+    const customerId = user.customerId || (user.role === 'customer' ? user.id : 'CUST001');
+    return this.getInvoiceForCustomer(id, customerId);
   }
 
   createInvoice(data) {
@@ -357,7 +638,12 @@ class InvoiceService {
     return newInvoice;
   }
 
-  updateInvoice(id, data) {
+  updateInvoice(id, data = {}) {
+    const user = this.getAuthenticatedUser();
+    if (user && user.role === 'customer' && !data._allowInternal) {
+      throw new Error('Access denied: Customers cannot edit or modify invoices.');
+    }
+
     const list = this.getInvoices();
     const index = list.findIndex((i) => i.id === id);
     if (index === -1) return null;
@@ -413,6 +699,17 @@ class InvoiceService {
       status: 'Cancelled',
       _allowInternal: true,
     });
+  }
+
+  deleteInvoice(id) {
+    const user = this.getAuthenticatedUser();
+    if (user && user.role === 'customer') {
+      throw new Error('Access denied: Customers cannot delete invoices.');
+    }
+    const list = this.getInvoices();
+    const filtered = list.filter((i) => i.id !== id);
+    this.saveInvoices(filtered);
+    return true;
   }
 
   recordPaymentOnInvoice(invoiceId, paymentAmount) {

@@ -287,6 +287,216 @@ const INITIAL_SUBSCRIPTIONS = [
     createdAt: '2026-10-01T10:00:00Z',
     updatedAt: '2026-10-01T11:00:00Z',
   },
+  {
+    id: 'sub_alice_1',
+    subscriptionNumber: 'SUB-ALICE-001',
+    customerId: 'CUST001',
+    customer: {
+      id: 'CUST001',
+      name: 'Alice',
+      email: 'alice@example.com',
+      company: 'Alice Enterprises',
+    },
+    productId: 'prod_1',
+    productName: 'Odoo Subscription Connector',
+    planId: 'plan_1',
+    planName: 'Odoo Connector - Monthly Business',
+    quantity: 1,
+    unitPrice: 4999,
+    totalPrice: 4999,
+    billingFrequency: 'Monthly',
+    startDate: '2026-10-01',
+    endDate: '2027-10-01',
+    nextInvoiceDate: '2026-11-01',
+    status: 'Active',
+    activityHistory: [
+      {
+        id: 'act_al_1',
+        event: 'Activated',
+        title: 'Subscription Activated',
+        description: 'Connector instance provisioned for Alice Enterprises.',
+        timestamp: '2026-10-01T09:00:00Z',
+        user: 'Operations Team',
+      },
+    ],
+    createdAt: '2026-10-01T09:00:00Z',
+    updatedAt: '2026-10-01T09:00:00Z',
+  },
+  {
+    id: 'sub_alice_2',
+    subscriptionNumber: 'SUB-ALICE-002',
+    customerId: 'CUST001',
+    customer: {
+      id: 'CUST001',
+      name: 'Alice',
+      email: 'alice@example.com',
+      company: 'Alice Enterprises',
+    },
+    productId: 'prod_2',
+    productName: 'Cloud Infrastructure Monitoring Daemon',
+    planId: 'plan_3',
+    planName: 'Cloud Daemon - Growth Tier',
+    quantity: 1,
+    unitPrice: 3499,
+    totalPrice: 3499,
+    billingFrequency: 'Monthly',
+    startDate: '2026-10-15',
+    endDate: '2027-10-15',
+    nextInvoiceDate: '2026-11-15',
+    status: 'Paused',
+    activityHistory: [
+      {
+        id: 'act_al_2',
+        event: 'Paused',
+        title: 'Subscription Paused',
+        description: 'Customer temporary pause during setup.',
+        timestamp: '2026-10-20T10:00:00Z',
+        user: 'Operations Team',
+      },
+    ],
+    createdAt: '2026-10-15T09:00:00Z',
+    updatedAt: '2026-10-20T10:00:00Z',
+  },
+  {
+    id: 'sub_bob_1',
+    subscriptionNumber: 'SUB-BOB-001',
+    customerId: 'CUST002',
+    customer: {
+      id: 'CUST002',
+      name: 'Bob',
+      email: 'bob@example.com',
+      company: 'Bob Retail Logistics',
+    },
+    productId: 'prod_4',
+    productName: 'Smart POS Terminal V2',
+    planId: 'plan_5',
+    planName: 'POS Terminal - Hardware Lease Monthly',
+    quantity: 1,
+    unitPrice: 1899,
+    totalPrice: 1899,
+    billingFrequency: 'Monthly',
+    startDate: '2026-09-01',
+    endDate: '2027-09-01',
+    nextInvoiceDate: '2026-11-01',
+    status: 'Active',
+    activityHistory: [
+      {
+        id: 'act_bob_1',
+        event: 'Activated',
+        title: 'Subscription Activated',
+        description: 'POS terminal leased to Bob Retail Logistics.',
+        timestamp: '2026-09-01T10:00:00Z',
+        user: 'System Admin',
+      },
+    ],
+    createdAt: '2026-09-01T10:00:00Z',
+    updatedAt: '2026-09-01T10:00:00Z',
+  },
+  {
+    id: 'sub_bob_2',
+    subscriptionNumber: 'SUB-BOB-002',
+    customerId: 'CUST002',
+    customer: {
+      id: 'CUST002',
+      name: 'Bob',
+      email: 'bob@example.com',
+      company: 'Bob Retail Logistics',
+    },
+    productId: 'prod_1',
+    productName: 'Odoo Subscription Connector',
+    planId: 'plan_2',
+    planName: 'Odoo Connector - Enterprise Annual',
+    quantity: 1,
+    unitPrice: 49999,
+    totalPrice: 49999,
+    billingFrequency: 'Yearly',
+    startDate: '2026-10-01',
+    endDate: '2027-10-01',
+    nextInvoiceDate: '2027-10-01',
+    status: 'Active',
+    activityHistory: [
+      {
+        id: 'act_bob_2',
+        event: 'Activated',
+        title: 'Subscription Activated',
+        description: 'Enterprise connector activated for Bob Retail Logistics.',
+        timestamp: '2026-10-01T11:00:00Z',
+        user: 'Ops Engine',
+      },
+    ],
+    createdAt: '2026-10-01T11:00:00Z',
+    updatedAt: '2026-10-01T11:00:00Z',
+  },
+  {
+    id: 'sub_charlie_1',
+    subscriptionNumber: 'SUB-CHARLIE-001',
+    customerId: 'CUST003',
+    customer: {
+      id: 'CUST003',
+      name: 'Charlie',
+      email: 'charlie@example.com',
+      company: 'Charlie Tech Labs',
+    },
+    productId: 'prod_2',
+    productName: 'Cloud Infrastructure Monitoring Daemon',
+    planId: 'plan_3',
+    planName: 'Cloud Daemon - Starter Tier',
+    quantity: 1,
+    unitPrice: 1999,
+    totalPrice: 1999,
+    billingFrequency: 'Monthly',
+    startDate: '2026-08-01',
+    endDate: '2027-08-01',
+    nextInvoiceDate: '2026-11-01',
+    status: 'Active',
+    activityHistory: [
+      {
+        id: 'act_ch_1',
+        event: 'Activated',
+        title: 'Subscription Activated',
+        description: 'Monitoring cluster online for Charlie Tech Labs.',
+        timestamp: '2026-08-01T10:00:00Z',
+        user: 'Ops Engine',
+      },
+    ],
+    createdAt: '2026-08-01T10:00:00Z',
+    updatedAt: '2026-08-01T10:00:00Z',
+  },
+  {
+    id: 'sub_charlie_2',
+    subscriptionNumber: 'SUB-CHARLIE-002',
+    customerId: 'CUST003',
+    customer: {
+      id: 'CUST003',
+      name: 'Charlie',
+      email: 'charlie@example.com',
+      company: 'Charlie Tech Labs',
+    },
+    productId: 'prod_1',
+    productName: 'Odoo Subscription Connector',
+    planId: 'plan_2',
+    planName: 'Odoo Connector - Enterprise Consulting',
+    quantity: 1,
+    unitPrice: 15000,
+    totalPrice: 15000,
+    billingFrequency: 'Monthly',
+    startDate: '2026-06-01',
+    endDate: '2026-09-01',
+    nextInvoiceDate: null,
+    status: 'Closed',
+    activityHistory: [
+      {
+        id: 'act_ch_2',
+        event: 'Closed',
+        title: 'Subscription Closed',
+        description: 'Consulting pilot concluded as agreed.',
+        timestamp: '2026-09-01T23:59:59Z',
+        user: 'System Admin',
+      },
+    ],
+    createdAt: '2026-06-01T10:00:00Z',
+    updatedAt: '2026-09-01T23:59:59Z',
+  },
 ];
 
 function addDaysSafe(dateStr, days) {
@@ -838,6 +1048,59 @@ class SubscriptionService {
     return this.updateSubscription(id, {
       pendingRequest: null,
     });
+  }
+
+  /* ----------------- SESSION-DERIVED CUSTOMER ACCESS ----------------- */
+
+  getAuthenticatedUser() {
+    try {
+      const stored = localStorage.getItem('brightloop_auth_user');
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  getMySubscriptions() {
+    const user = this.getAuthenticatedUser();
+    if (!user) throw new Error('Unauthorized: No active session.');
+    const customerId = user.customerId || (user.role === 'customer' ? user.id : 'CUST001');
+    return this.getSubscriptionsForCustomer(customerId);
+  }
+
+  getMySubscriptionById(id) {
+    const user = this.getAuthenticatedUser();
+    if (!user) throw new Error('Unauthorized: No active session.');
+    const customerId = user.customerId || (user.role === 'customer' ? user.id : 'CUST001');
+    return this.getSubscriptionForCustomer(id, customerId);
+  }
+
+  requestMySubscriptionPause(id, reason = '') {
+    const user = this.getAuthenticatedUser();
+    if (!user) throw new Error('Unauthorized: No active session.');
+    const customerId = user.customerId || (user.role === 'customer' ? user.id : 'CUST001');
+    return this.requestPause(id, customerId, reason);
+  }
+
+  requestMySubscriptionResume(id, reason = '') {
+    const user = this.getAuthenticatedUser();
+    if (!user) throw new Error('Unauthorized: No active session.');
+    const customerId = user.customerId || (user.role === 'customer' ? user.id : 'CUST001');
+    return this.requestResume(id, customerId, reason);
+  }
+
+  requestMySubscriptionCancellation(id, reason = '') {
+    const user = this.getAuthenticatedUser();
+    if (!user) throw new Error('Unauthorized: No active session.');
+    const customerId = user.customerId || (user.role === 'customer' ? user.id : 'CUST001');
+    return this.requestCancellation(id, customerId, reason);
+  }
+
+  cancelMySubscriptionRequest(id) {
+    const user = this.getAuthenticatedUser();
+    if (!user) throw new Error('Unauthorized: No active session.');
+    const customerId = user.customerId || (user.role === 'customer' ? user.id : 'CUST001');
+    return this.cancelPendingRequest(id, customerId);
   }
 
   saveSubscriptions(list) {

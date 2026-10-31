@@ -35,10 +35,9 @@ export default function CustomerDashboardPage() {
     }
     setCurrentUser(user);
 
-    const customerId = user.customerId || 'cust_1'; // fallback to first customer if admin viewing
-    const userSubs = subscriptionService.getSubscriptionsForCustomer(customerId);
-    const userInvs = invoiceService.getInvoicesByCustomer(customerId);
-    const userPays = paymentService.getPaymentsByCustomer(customerId);
+    const userSubs = subscriptionService.getMySubscriptions();
+    const userInvs = invoiceService.getMyInvoices();
+    const userPays = paymentService.getMyPayments();
 
     setSubscriptions(userSubs);
     setInvoices(userInvs);

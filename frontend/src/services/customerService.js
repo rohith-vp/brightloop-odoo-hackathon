@@ -96,6 +96,60 @@ const INITIAL_CUSTOMERS = [
     status: 'active',
     createdAt: '2026-04-05T16:20:00Z',
   },
+  {
+    id: 'CUST001',
+    name: 'Alice',
+    contactPerson: 'Alice Henderson',
+    email: 'alice@example.com',
+    phone: '+91 98200 11111',
+    company: 'Alice Enterprises',
+    gstin: '27AABCA1111A1Z1',
+    billingAddress: {
+      street: '101 Cyber Heights, Baner Road',
+      city: 'Pune',
+      state: 'Maharashtra',
+      postalCode: '411045',
+      country: 'India',
+    },
+    status: 'active',
+    createdAt: '2026-01-01T00:00:00Z',
+  },
+  {
+    id: 'CUST002',
+    name: 'Bob',
+    contactPerson: 'Bob Martinez',
+    email: 'bob@example.com',
+    phone: '+91 98200 22222',
+    company: 'Bob Retail Logistics',
+    gstin: '29AABCB2222B1Z2',
+    billingAddress: {
+      street: '202 Industrial Suburb, Peenya',
+      city: 'Bengaluru',
+      state: 'Karnataka',
+      postalCode: '560058',
+      country: 'India',
+    },
+    status: 'active',
+    createdAt: '2026-01-02T00:00:00Z',
+  },
+  {
+    id: 'CUST003',
+    name: 'Charlie',
+    contactPerson: 'Charlie Tan',
+    email: 'charlie@example.com',
+    phone: '+91 98200 33333',
+    company: 'Charlie Tech Labs',
+    gstin: '33AABCC3333C1Z3',
+    billingAddress: {
+      street: '303 Tidel Park, Rajiv Gandhi Salai',
+      city: 'Chennai',
+      state: 'Tamil Nadu',
+      postalCode: '600113',
+      country: 'India',
+    },
+    status: 'active',
+    createdAt: '2026-01-03T00:00:00Z',
+  },
 ];
 
 class CustomerService {
@@ -160,6 +214,52 @@ class CustomerService {
     };
     this.saveCustomers(customers);
     return customers[index];
+  }
+
+  getAuthenticatedUser() {
+    try {
+      const stored = localStorage.getItem('brightloop_auth_user');
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  getAuthenticatedCustomerId() {
+    const user = this.getAuthenticatedUser();
+    return user?.role === 'customer' ? user.customerId : null;
+  }
+
+  getMyProfile() {
+    const user = this.getAuthenticatedUser();
+    if (!user) throw new Error('Unauthorized: No active session.');
+    if (user.role !== 'customer') {
+      // If admin/staff is previewing portal, fall back to selected/default customer
+      const fallbackId = user.customerId || 'CUST001';
+      return this.getCustomerById(fallbackId);
+    }
+    const customer = this.getCustomerById(user.customerId);
+    if (!customer) throw new Error('Customer profile not found.');
+    return customer;
+  }
+
+  updateMyProfile(permittedData = {}) {
+    const user = this.getAuthenticatedUser();
+    if (!user) throw new Error('Unauthorized: No active session.');
+    if (user.role !== 'customer') {
+      throw new Error('Access denied: Only customer accounts can update their customer profile through this endpoint.');
+    }
+
+    // Security: Disallow tampering with ID, role, or email
+    const safeData = {};
+    if (permittedData.name !== undefined) safeData.name = permittedData.name;
+    if (permittedData.contactPerson !== undefined) safeData.contactPerson = permittedData.contactPerson;
+    if (permittedData.phone !== undefined) safeData.phone = permittedData.phone;
+    if (permittedData.company !== undefined) safeData.company = permittedData.company;
+    if (permittedData.gstin !== undefined) safeData.gstin = permittedData.gstin;
+    if (permittedData.billingAddress !== undefined) safeData.billingAddress = permittedData.billingAddress;
+
+    return this.updateCustomer(user.customerId, safeData);
   }
 
   deleteCustomer(id) {

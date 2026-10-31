@@ -79,6 +79,39 @@ export const MOCK_USERS = [
     avatar: 'SP',
     customerId: 'cust_5',
   },
+  {
+    id: 'usr_cust_a',
+    email: 'alice@example.com',
+    password: 'Password@123',
+    name: 'Alice',
+    role: USER_ROLES.CUSTOMER,
+    company: 'Alice Enterprises',
+    title: 'Managing Director',
+    avatar: 'AL',
+    customerId: 'CUST001',
+  },
+  {
+    id: 'usr_cust_b',
+    email: 'bob@example.com',
+    password: 'Password@123',
+    name: 'Bob',
+    role: USER_ROLES.CUSTOMER,
+    company: 'Bob Retail Logistics',
+    title: 'Head of Purchasing',
+    avatar: 'BO',
+    customerId: 'CUST002',
+  },
+  {
+    id: 'usr_cust_c',
+    email: 'charlie@example.com',
+    password: 'Password@123',
+    name: 'Charlie',
+    role: USER_ROLES.CUSTOMER,
+    company: 'Charlie Tech Labs',
+    title: 'Principal Architect',
+    avatar: 'CH',
+    customerId: 'CUST003',
+  },
 ];
 
 class AuthService {
@@ -87,23 +120,15 @@ class AuthService {
   }
 
   initStorage() {
-    try {
-      const stored = localStorage.getItem(AUTH_STORAGE_KEY);
-      if (!stored) {
-        // Default to admin user for convenient testing
-        localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(MOCK_USERS[0]));
-      }
-    } catch {
-      // Storage fallback
-    }
+    // Keep session storage initialized
   }
 
   getCurrentUser() {
     try {
       const stored = localStorage.getItem(AUTH_STORAGE_KEY);
-      return stored ? JSON.parse(stored) : MOCK_USERS[0];
+      return stored ? JSON.parse(stored) : null;
     } catch {
-      return MOCK_USERS[0];
+      return null;
     }
   }
 

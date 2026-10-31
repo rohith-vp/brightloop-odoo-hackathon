@@ -43,8 +43,7 @@ export default function CustomerProfilePage() {
     }
     setCurrentUser(user);
 
-    const customerId = user.customerId || 'cust_1';
-    const cust = customerService.getCustomerById(customerId);
+    const cust = customerService.getMyProfile();
     if (cust) {
       setCustomer(cust);
       setName(cust.name || '');
@@ -75,10 +74,11 @@ export default function CustomerProfilePage() {
     setErrorMessage('');
 
     try {
-      const updated = customerService.updateCustomer(customer.id, {
+      const updated = customerService.updateMyProfile({
         name,
         contactPerson,
         phone,
+        company: customer.company || name,
         gstin,
         billingAddress: {
           street,

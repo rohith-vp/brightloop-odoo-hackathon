@@ -48,11 +48,11 @@ export default function CustomerSubscriptionModal({
 
     try {
       if (requestType === 'Pause') {
-        subscriptionService.requestPause(subscription.id, customerId, reason.trim());
+        subscriptionService.requestMySubscriptionPause(subscription.id, reason.trim());
       } else if (requestType === 'Resume') {
-        subscriptionService.requestResume(subscription.id, customerId, reason.trim());
+        subscriptionService.requestMySubscriptionResume(subscription.id, reason.trim());
       } else if (requestType === 'Cancellation') {
-        subscriptionService.requestCancellation(subscription.id, customerId, reason.trim());
+        subscriptionService.requestMySubscriptionCancellation(subscription.id, reason.trim());
       }
 
       setFeedback({
@@ -69,7 +69,7 @@ export default function CustomerSubscriptionModal({
 
   const handleWithdrawRequest = () => {
     try {
-      subscriptionService.cancelPendingRequest(subscription.id, customerId);
+      subscriptionService.cancelMySubscriptionRequest(subscription.id);
       setFeedback({ type: 'success', message: 'Pending request has been withdrawn.' });
       onUpdated();
     } catch (err) {

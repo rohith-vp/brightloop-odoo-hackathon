@@ -33,13 +33,16 @@ export default function CustomerSubscriptionsPage() {
     }
     setCurrentUser(user);
 
-    const customerId = user.customerId || 'cust_1';
-    const list = subscriptionService.getSubscriptionsForCustomer(customerId);
+    const list = subscriptionService.getMySubscriptions();
     setSubscriptions(list);
 
     if (selectedSubscription) {
-      const refreshed = subscriptionService.getSubscriptionById(selectedSubscription.id);
-      setSelectedSubscription(refreshed);
+      try {
+        const refreshed = subscriptionService.getMySubscriptionById(selectedSubscription.id);
+        setSelectedSubscription(refreshed);
+      } catch {
+        setSelectedSubscription(null);
+      }
     }
   };
 

@@ -47,6 +47,90 @@ const INITIAL_PAYMENTS = [
     notes: 'First tranche partial payment for Cloud Daemon monitoring retainer.',
     createdAt: '2026-09-10T14:00:00Z',
   },
+  {
+    id: 'pay_alice_1',
+    paymentReference: 'PAY-ALICE-001',
+    customerId: 'CUST001',
+    customerName: 'Alice',
+    invoiceId: 'inv_alice_1',
+    invoiceNumber: 'INV-ALICE-001',
+    amount: 5898.82,
+    paymentDate: '2026-10-05',
+    paymentMethod: 'Bank Transfer',
+    referenceNumber: 'NEFT-ALICE-001',
+    notes: 'Full settlement for invoice INV-ALICE-001.',
+    createdAt: '2026-10-05T12:00:00Z',
+  },
+  {
+    id: 'pay_alice_2',
+    paymentReference: 'PAY-ALICE-002',
+    customerId: 'CUST001',
+    customerName: 'Alice',
+    invoiceId: 'inv_alice_1',
+    invoiceNumber: 'INV-ALICE-001',
+    amount: 1000,
+    paymentDate: '2026-10-06',
+    paymentMethod: 'UPI',
+    referenceNumber: 'UPI-ALICE-002',
+    notes: 'Advance retainer deposit.',
+    createdAt: '2026-10-06T12:00:00Z',
+  },
+  {
+    id: 'pay_bob_1',
+    paymentReference: 'PAY-BOB-001',
+    customerId: 'CUST002',
+    customerName: 'Bob',
+    invoiceId: 'inv_bob_1',
+    invoiceNumber: 'INV-BOB-001',
+    amount: 2240.82,
+    paymentDate: '2026-09-10',
+    paymentMethod: 'Card',
+    referenceNumber: 'CARD-BOB-001',
+    notes: 'Terminal monthly lease payment.',
+    createdAt: '2026-09-10T12:00:00Z',
+  },
+  {
+    id: 'pay_bob_2',
+    paymentReference: 'PAY-BOB-002',
+    customerId: 'CUST002',
+    customerName: 'Bob',
+    invoiceId: 'inv_bob_2',
+    invoiceNumber: 'INV-BOB-002',
+    amount: 20000,
+    paymentDate: '2026-10-15',
+    paymentMethod: 'Bank Transfer',
+    referenceNumber: 'RTGS-BOB-002',
+    notes: 'First tranche for enterprise connector.',
+    createdAt: '2026-10-15T12:00:00Z',
+  },
+  {
+    id: 'pay_charlie_1',
+    paymentReference: 'PAY-CHARLIE-001',
+    customerId: 'CUST003',
+    customerName: 'Charlie',
+    invoiceId: 'inv_charlie_1',
+    invoiceNumber: 'INV-CHARLIE-001',
+    amount: 2358.82,
+    paymentDate: '2026-08-05',
+    paymentMethod: 'UPI',
+    referenceNumber: 'UPI-CHARLIE-001',
+    notes: 'August monitoring settlement.',
+    createdAt: '2026-08-05T12:00:00Z',
+  },
+  {
+    id: 'pay_charlie_2',
+    paymentReference: 'PAY-CHARLIE-002',
+    customerId: 'CUST003',
+    customerName: 'Charlie',
+    invoiceId: 'inv_charlie_1',
+    invoiceNumber: 'INV-CHARLIE-001',
+    amount: 500,
+    paymentDate: '2026-08-06',
+    paymentMethod: 'Cash',
+    referenceNumber: 'CASH-RCPT-002',
+    notes: 'Pilot consultation adjustment.',
+    createdAt: '2026-08-06T12:00:00Z',
+  },
 ];
 
 class PaymentService {
@@ -98,6 +182,10 @@ class PaymentService {
     return list.filter((p) => p.customerId === customerId);
   }
 
+  getPaymentsForCustomer(customerId) {
+    return this.getPaymentsByCustomer(customerId);
+  }
+
   getPaymentForCustomer(id, customerId) {
     if (!customerId) throw new Error('Customer ID is required.');
     const pay = this.getPaymentById(id);
@@ -106,6 +194,42 @@ class PaymentService {
       throw new Error('Access denied: You do not have permission to view this payment.');
     }
     return pay;
+  }
+
+  /* ----------------- SESSION-DERIVED CUSTOMER ACCESS ----------------- */
+
+  getAuthenticatedUser() {
+    try {
+      const stored = localStorage.getItem('brightloop_auth_user');
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  getMyPayments() {
+    const user = this.getAuthenticatedUser();
+    if (!user) throw new Error('Unauthorized: No active session.');
+    const customerId = user.customerId || (user.role === 'customer' ? user.id : 'CUST001');
+    return this.getPaymentsByCustomer(customerId);
+  }
+
+  getMyPaymentById(id) {
+    const user = this.getAuthenticatedUser();
+    if (!user) throw new Error('Unauthorized: No active session.');
+    const customerId = user.customerId || (user.role === 'customer' ? user.id : 'CUST001');
+    return this.getPaymentForCustomer(id, customerId);
+  }
+
+  deletePayment(id) {
+    const user = this.getAuthenticatedUser();
+    if (user && user.role === 'customer') {
+      throw new Error('Access denied: Customers cannot delete payment records.');
+    }
+    const list = this.getPayments();
+    const filtered = list.filter((p) => p.id !== id);
+    this.savePayments(filtered);
+    return true;
   }
 
   validatePayment(data) {

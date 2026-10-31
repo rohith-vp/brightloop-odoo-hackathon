@@ -29,8 +29,7 @@ export default function CustomerPaymentsPage() {
     }
     setCurrentUser(user);
 
-    const customerId = user.customerId || 'cust_1';
-    const list = paymentService.getPaymentsByCustomer(customerId);
+    const list = paymentService.getMyPayments();
     setPayments(list);
   };
 
