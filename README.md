@@ -19,6 +19,28 @@ docker compose up --build
 
 Stop with `docker compose down`. Database data persists in the `postgres_data` volume. To wipe it, run `docker compose down -v`.
 
+### Demo accounts
+
+Once the stack is running, create one account per role:
+
+```bash
+docker compose run --rm api npm run seed:demo
+```
+
+All three accounts use the same password: **`Demo!Passw0rd`**
+
+| Role | Email | What it can do |
+|---|---|---|
+| Admin | `admin@brightloop.test` | Everything. Also sets tax rules and manages users and roles. |
+| Staff | `staff@brightloop.test` | Products, plans, subscriptions, invoices, and billing runs. Cannot set tax rules or manage users. |
+| Customer | `customer@brightloop.test` | Read-only catalog (products and plans). Customers have no access to subscriptions or invoices yet, because the customer portal is not built. |
+
+Notes:
+
+-   The seed resets these three accounts to the password above each time it runs, so this table always matches the database.
+-   The seed refuses to run when `APP_ENV=production`. These passwords are public in this repository, so never use these accounts for real data.
+-   To create a different admin, run `docker compose run --rm -e ADMIN_EMAIL=you@example.com -e ADMIN_PASSWORD='Your!Password1' api npm run create-admin`. The password must be more than 8 characters, with an uppercase letter, a lowercase letter, and a special character.
+
 ### When dependencies change
 
 The web container keeps `node_modules` in a named volume, so a new package needs that volume rebuilt:
