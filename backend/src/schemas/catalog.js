@@ -17,8 +17,8 @@ function isRealDate(value) {
 const money = z
   .string()
   .regex(MONEY_PATTERN, 'Use an amount of zero or more with at most two decimals, such as 100.00.');
-const uuid = z.string().regex(UUID_PATTERN, 'Must be a valid id.');
-const isoDate = z
+export const uuid = z.string().regex(UUID_PATTERN, 'Must be a valid id.');
+export const isoDate = z
   .string()
   .regex(ISO_DATE_PATTERN, 'Use the format YYYY-MM-DD.')
   .refine(isRealDate, 'Not a real calendar date.');

@@ -87,6 +87,21 @@ backend/
 
 New routes go in `src/routes/`, and are mounted in `src/app.js`.
 
+### Billing
+
+Subscriptions go through Draft, Confirmed, Active, and Closed, and each step is checked on the server. Only Active subscriptions are billed.
+
+Create the invoices due as of a date (safe to repeat):
+
+```bash
+curl -X POST http://localhost:8000/api/billing/run \
+  -H "Authorization: Bearer <admin-or-staff-token>" \
+  -H "Content-Type: application/json" \
+  -d '{"as_of": "2026-10-15"}'
+```
+
+The billing rules live in `packages/billing`, which the API imports through `backend/src/billing.js`. Docker Compose mounts that folder at `/packages`. See `docs/api.md` section 5.
+
 ### Catalog endpoints
 
 Products, variants, and plans are implemented in `src/routes/`. Reads need a signed-in user. Writes need the Admin or Staff role. Signed-in auth is not merged yet, so these endpoints return 401 until it is. See `docs/api.md`.
