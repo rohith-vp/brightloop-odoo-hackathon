@@ -124,7 +124,7 @@ describe('subscriptions, invoices, and batch billing (integration)', { skip: url
 
   beforeEach(async () => {
     await db.query(
-      'TRUNCATE invoices, subscriptions, taxes, plans, product_variants, products, users RESTART IDENTITY CASCADE',
+      'TRUNCATE invoices, subscriptions, taxes, discount_rules, plans, product_variants, products, users RESTART IDENTITY CASCADE',
     );
   });
 

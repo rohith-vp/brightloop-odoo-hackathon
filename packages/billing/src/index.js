@@ -15,3 +15,4 @@ export { createStateMachine, InvalidTransitionError } from './state-machine.js';
 export { subscriptionMachine, SUBSCRIPTION_ACTIONS } from './subscription-state.js';
 export { invoiceMachine, INVOICE_ACTIONS } from './invoice-state.js';
 export { invoiceAmounts, periodsToBill } from './invoicing.js';
+export { DISCOUNT_REJECTIONS, discountRejections, selectDiscount, assertDiscountRule } from './discounts.js';

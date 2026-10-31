@@ -416,29 +416,28 @@ CLOSED is final. The database and the state machine both enforce this.
 
 ## 6. Discount rules
 
-  ----------------------------------------------------------------------------------
-  Method            Endpoint                     Purpose           Access
-  ----------------- ---------------------------- ----------------- -----------------
-  `GET`             `/discount-rules`            List discount     Admin
-                                                 rules             
+Admins only. A rule gives a percentage off the gross line amount
+(quantity x unit price). Discount rule endpoints are under
+`/api/discount-rules`.
 
-  `POST`            `/discount-rules`            Create a          Admin
-                                                 percentage        
-                                                 discount rule     
+  ------------------------------------------------------------------------------
+  Method            Endpoint                       Purpose
+  ----------------- ------------------------------ -----------------------------
+  `GET`             `/discount-rules`              List rules (paginated)
 
-  `GET`             `/discount-rules/{ruleId}`   Get rule details  Admin
+  `POST`            `/discount-rules`              Create a rule
 
-  `PATCH`           `/discount-rules/{ruleId}`   Update rule       Admin
-                                                 configuration or  
-                                                 enabled state     
-  ----------------------------------------------------------------------------------
+  `GET`             `/discount-rules/{ruleId}`     Get one rule, with times_used
+
+  `PATCH`           `/discount-rules/{ruleId}`     Change given fields, including
+                                                   `enabled`
+  ------------------------------------------------------------------------------
 
 ### Create discount rule request
 
 ``` json
 {
   "name": "Three-seat discount",
-  "discount_type": "PERCENT",
   "value": "10.00",
   "minimum_quantity": 3,
   "starts_on": "2026-10-01",
@@ -448,11 +447,34 @@ CLOSED is final. The database and the state machine both enforce this.
 }
 ```
 
-The discount engine applies eligible rules automatically during invoice
-generation. Eligibility depends on minimum quantity, date window,
-enabled state, and remaining usage. The invoice response should expose
-the applied rule and discount amount so the frontend can show the
-calculation.
+`ends_on` and `usage_limit` may be `null`. `minimum_quantity` defaults to 1,
+and `enabled` defaults to `true`. `value` is above 0 and at most 100.
+
+### How a rule is applied
+
+A rule applies to an invoice only when all of these hold:
+
+-   The rule is enabled.
+-   The subscription quantity is at or above `minimum_quantity`.
+-   The invoice's billing date falls inside the window
+    `starts_on` to `ends_on`, both inclusive. The billing date is the
+    period start.
+-   The rule has uses left (`times_used` is below `usage_limit`).
+
+Rules do not stack. When several rules are eligible, the highest
+percentage applies. On a tie, the earliest-created rule wins.
+
+The discount is applied when the batch run creates an invoice, and it
+is not retroactive. The invoice records `discount_rule_id`,
+`discount_percent`, and `discount_amount`. Tax is calculated on the
+discounted amount. For 3 seats at 100.00 with 10% off and 10% tax, the
+total is 297.00.
+
+`times_used` goes up in the same transaction that creates the invoice.
+A run that fails therefore uses nothing. Re-running for the same date
+does not use the discount again.
+
+A `PATCH` cannot set `usage_limit` below `times_used`; that returns 422.
 
 ## 7. Payments
 
