@@ -3,28 +3,51 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout';
 import DashboardPage from './pages/DashboardPage';
 
-function PlaceholderPage({ title }) {
+function PlaceholderPage({ title, description }) {
   return (
     <div
+      className="card-surface"
       style={{
-        backgroundColor: 'var(--color-surface)',
-        border: '1px solid var(--color-border)',
-        borderRadius: 'var(--radius-lg)',
-        padding: 'var(--space-6)',
+        padding: 'var(--space-8)',
+        maxWidth: '800px',
       }}
     >
+      <div
+        style={{
+          display: 'inline-flex',
+          padding: '4px 10px',
+          borderRadius: 'var(--radius-xs)',
+          backgroundColor: 'var(--color-surface-green)',
+          color: 'var(--color-primary)',
+          fontSize: '11px',
+          fontWeight: 'var(--font-weight-semibold)',
+          marginBottom: 'var(--space-3)',
+          textTransform: 'uppercase',
+          letterSpacing: '0.04em',
+        }}
+      >
+        Module Foundation
+      </div>
       <h1
         style={{
-          fontSize: 'var(--font-size-xl)',
-          fontWeight: 'var(--font-weight-bold)',
-          color: 'var(--color-primary)',
+          fontSize: 'var(--font-size-heading)',
+          fontWeight: 'var(--font-weight-semibold)',
+          color: 'var(--color-secondary)',
           marginBottom: 'var(--space-2)',
+          letterSpacing: '-0.02em',
         }}
       >
         {title}
       </h1>
-      <p style={{ color: 'var(--color-text-muted)', fontSize: 'var(--font-size-sm)' }}>
-        Layout foundation placeholder. Functional implementation pending.
+      <p
+        style={{
+          color: 'var(--color-text-secondary)',
+          fontSize: 'var(--font-size-body)',
+          lineHeight: 1.6,
+        }}
+      >
+        {description ||
+          'This module foundation is configured and aligned with the centralized fintech design system. Functional workflows will be integrated in Phase 2.'}
       </p>
     </div>
   );
@@ -36,9 +59,53 @@ export default function App() {
       <Routes>
         <Route path="/" element={<MainLayout />}>
           <Route index element={<DashboardPage />} />
-          <Route path="subscriptions" element={<PlaceholderPage title="Subscriptions" />} />
-          <Route path="customers" element={<PlaceholderPage title="Customers" />} />
-          <Route path="settings" element={<PlaceholderPage title="Settings" />} />
+          {/* Main Menu */}
+          <Route
+            path="products"
+            element={<PlaceholderPage title="Products" description="Manage subscription products, recurring service items, and hardware packages." />}
+          />
+          <Route
+            path="plans"
+            element={<PlaceholderPage title="Plans" description="Configure pricing tiers, billing cycles, quotas, and feature entitlements." />}
+          />
+          <Route
+            path="subscriptions"
+            element={<PlaceholderPage title="Subscriptions" description="Manage customer subscription contracts, active renewals, upgrades, and cancellations." />}
+          />
+
+          {/* Finance */}
+          <Route
+            path="quotations"
+            element={<PlaceholderPage title="Quotations" description="Create, review, and dispatch commercial quotes and subscription estimates." />}
+          />
+          <Route
+            path="invoices"
+            element={<PlaceholderPage title="Invoices" description="Automated billing invoices, tax breakdowns, overdue notices, and receipt generation." />}
+          />
+          <Route
+            path="payments"
+            element={<PlaceholderPage title="Payments" description="Payment gateway collection records, UPI mandate settlements, and transaction reconciliations." />}
+          />
+          <Route
+            path="discounts"
+            element={<PlaceholderPage title="Discounts" description="Promotional coupons, customer-specific concession rules, and seasonal discount campaigns." />}
+          />
+
+          {/* Management */}
+          <Route
+            path="customers"
+            element={<PlaceholderPage title="Customers" description="Customer directory, account contacts, billing details, and subscription histories." />}
+          />
+          <Route
+            path="reports"
+            element={<PlaceholderPage title="Reports" description="Financial analytics, churn modeling, cohort retention, and MRR growth tracking." />}
+          />
+          <Route
+            path="settings"
+            element={<PlaceholderPage title="Settings" description="System configurations, webhook endpoints, payment gateway keys, and organization profiles." />}
+          />
+
+          {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>

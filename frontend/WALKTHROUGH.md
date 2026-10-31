@@ -1,117 +1,101 @@
-# Brightloop Frontend Foundation - Setup Walkthrough
+# Brightloop - Frontend Architecture & Phase 1 Visual Redesign
 
-This document outlines the foundation setup completed for the **Brightloop** Subscription Management System frontend.
-
----
-
-## 1. Project Initialization & Dependencies
-
-A fresh React + Vite application using JavaScript (JSX) was initialized in the `frontend` directory.
-
-### Installed Dependencies:
-- **`react-router-dom` (`^7.18.5`)**: Client-side routing with nested layouts.
-- **`lucide-react` (`^1.65.0`)**: Consistent, lightweight SVG icon set.
-- **`recharts` (`^3.10.1`)**: Charting library prepared for future analytics/metrics.
-- **`react` & `react-dom` (`^19.2.8`)**: Core React library.
+This document outlines the foundation setup and the **Phase 1 Visual Redesign** completed for the **Brightloop** Subscription Management System.
 
 ---
 
-## 2. Design Tokens & Styling Architecture
+## 1. Design System & Colour Tokens
 
-All design variables are centralized in `src/styles/tokens.css` (aliased at `src/tokens.css`).
+Brightloop's visual identity has been redesigned following a clean commercial fintech aesthetic:
 
 ### Core Colour Palette:
-- **Primary**: `#243B64` (Used for sidebar, brand accents, and primary headings)
-- **Secondary**: `#4F46E5` (Used for active navigation indicators and badges)
-- **Background**: `#F8FAFC` (Used for root page background)
+- **Primary**: `#087A4B` (Emerald Green - primary buttons, active highlights, key metrics)
+- **Secondary**: `#171918` (Charcoal Black - active navigation background, primary headings)
+- **Background**: `#F3F5F4` (Soft Grey - application canvas)
+
+### Additional Neutral & Functional Tokens:
+- **White Content Surface**: `#FFFFFF`
+- **Main Text**: `#252825`
+- **Secondary Text**: `#858B87`
+- **Subtle Borders**: `#E7EAE8`
+- **Light Green Surface**: `#E9F3ED`
+
+### Status Badges:
+- **Success / Active**: Background `#E9F3ED`, Text `#087A4B`
+- **Pending**: Background `#FEF3C7`, Text `#B45309`
+- **Overdue**: Background `#FEE2E2`, Text `#B91C1C`
 
 ### Typography:
-- **Font**: **Inter** is the exclusive font family configured across the application.
-- Loaded in `index.html` via Google Fonts (`weights: 400, 500, 600, 700`).
-
-### Spacing Scale:
-```css
---space-1: 4px;
---space-2: 8px;
---space-3: 12px;
---space-4: 16px;
---space-5: 20px;
---space-6: 24px;
---space-8: 32px;
---space-10: 40px;
---space-12: 48px;
-```
-
-### Responsive Breakpoints:
-- **Mobile**: `640px`
-- **Tablet**: `768px`
-- **Desktop**: `1024px`
-- **Large Desktop**: `1280px`
+- **Font**: Inter as the sole font family.
+- **Scale**:
+  - Page Headings: `24–26px` (semibold)
+  - Section Headings: `15–17px` (semibold)
+  - Body Text: `13–14px` (regular/medium)
+  - Supporting / Meta: `11–12px` (medium/semibold)
 
 ---
 
-## 3. Folder Structure
+## 2. Component Architecture
 
-The project structure was organized cleanly for maintainability and scalability:
+### A. Sidebar (`src/components/Sidebar.jsx`)
+- Clean white background (`#FFFFFF`) with desktop width of `245px`.
+- Brightloop brand mark at top with emerald green icon badge (`#087A4B`).
+- Compact in-sidebar search input (`Search menu...`) with real-time filtering.
+- Grouped navigation sections with subtle uppercase section labels:
+  - **MAIN MENU**: Dashboard, Products, Plans, Subscriptions
+  - **FINANCE**: Quotations, Invoices, Payments, Discounts
+  - **MANAGEMENT**: Customers, Reports, Settings
+- Active navigation item styled in dark charcoal (`#171918`) with white text and emerald green icon.
+- User profile footer with user avatar, name ("Rohith V P"), role ("Billing Admin"), and chevron.
+- Mobile drawer support with off-canvas slide-in and backdrop overlay.
 
-```
-frontend/
-├── public/
-│   └── vite.svg
-├── src/
-│   ├── assets/              # Static assets (images, logos)
-│   ├── components/          # Reusable UI components
-│   │   ├── Navbar.jsx       # Top navigation bar with mobile toggle
-│   │   └── Sidebar.jsx      # Navigation sidebar with brand & links
-│   ├── layouts/             # App-level layout wrappers
-│   │   └── MainLayout.jsx   # Shell layout integrating Navbar, Sidebar, and Outlet
-│   ├── pages/               # Route view components
-│   │   └── DashboardPage.jsx# Initial overview landing page
-│   ├── services/            # API services and business logic
-│   │   └── api.js           # Base client configuration
-│   ├── styles/              # Global CSS & tokens
-│   │   └── tokens.css       # Centralized design tokens
-│   ├── App.jsx              # React Router route configuration
-│   ├── index.css            # Base styles, resets, and layout media queries
-│   ├── main.jsx             # React DOM entrypoint
-│   └── tokens.css           # Root-level token re-export
-├── index.html               # HTML template with Inter font preconnect
-├── package.json             # Scripts & dependency definitions
-└── vite.config.js           # Vite build configuration
-```
+### B. Top Navbar (`src/components/Navbar.jsx`)
+- White surface (`#FFFFFF`), `64px` height with subtle bottom border (`#E7EAE8`).
+- Mobile hamburger menu toggle for viewports `<= 768px`.
+- Breadcrumb navigation indicating active route (e.g. `Dashboard / Overview`).
+- Centralized compact search input (`Search subscriptions, invoices, customers...`).
+- Utility icon actions: Help (`HelpCircle`), Messages (`MessageSquare`), Notifications (`Bell` with emerald unread dot).
+- User avatar trigger with dropdown indicator.
+
+### C. Main Layout (`src/layouts/MainLayout.jsx`)
+- Responsive shell combining Navbar, Sidebar, and the `<main className="layout-content">` container.
+- Background set to soft grey (`#F3F5F4`).
+- Off-canvas drawer and backdrop overlay for tablet/mobile.
+
+### D. Dashboard Page (`src/pages/DashboardPage.jsx`)
+- **Header**:
+  - Title: "Overview" with description: *"Here is the summary of your subscription business."*
+  - Controls: Date range dropdown (Last 7 Days, Last 30 Days, Last 90 Days, YTD) and Reset button.
+- **Financial Summary (4 Compact Panels)**:
+  1. *Total Revenue*: `₹1,24,580` – Highlight emerald panel (`#087A4B`) with `+14.2%` badge.
+  2. *Active Subscriptions*: `248` – White card with `+18 this month` badge.
+  3. *Outstanding Amount*: `₹12,430` – White card with `5 invoices pending` notice.
+  4. *Overdue Invoices*: `32` – White card with `Action required` overdue tag.
+- **Two-Column Layout**:
+  - **Left Section**:
+    - *Subscription Health*: MRR (`₹94,200`), ARPU (`₹502`), Churn Rate (`1.8%`), and visual distribution bar.
+    - *Upcoming Renewals (7 Days)*: List of upcoming customer subscription renewals with auto-renew status.
+    - *Recent Customer Activity*: Event log of upgrades, card updates, and quotes.
+  - **Right Section**:
+    - *Monthly Revenue Trajectory*: Interactive `AreaChart` with Recharts using an emerald gradient fill.
+    - *Payment Collections*: Settled (`₹1,12,150`) vs Pending (`₹12,430`) progress bar and payment method distribution (UPI 52%, Cards 36%, Netbanking 12%).
+- **Recent Activities Table**:
+  - Real-time subscription event ledger with columns: *Activity*, *Customer*, *Reference ID*, *Date*, *Amount*, *Status*.
+  - Styled with status badges (Active, Pending, Overdue).
 
 ---
 
-## 4. Layout Architecture
+## 3. Route Configuration (`src/App.jsx`)
 
-### `MainLayout.jsx`
-- Manages sidebar toggle state (`sidebarOpen`).
-- Provides a click-away backdrop overlay on mobile and tablet screens.
-- Houses the `<Navbar />`, `<Sidebar />`, and `<main className="layout-content"><Outlet /></main>`.
-
-### `Sidebar.jsx`
-- Fixed on desktop with a fixed width of `260px` and primary `#243B64` background.
-- Transforms into an off-canvas drawer on screens `<= 768px`.
-- Navigation items styled with `#4F46E5` when active.
-
-### `Navbar.jsx`
-- Sticky top header at `64px` height with subtle bottom border.
-- Features mobile hamburger button (`Menu` icon) that automatically hides on desktop screens.
+All navigation routes are wired to prevent broken links:
+- `/` -> `DashboardPage`
+- `/products`, `/plans`, `/subscriptions` -> Product & plan placeholders
+- `/quotations`, `/invoices`, `/payments`, `/discounts` -> Finance placeholders
+- `/customers`, `/reports`, `/settings` -> Management placeholders
 
 ---
 
-## 5. Verification & Running the Project
+## 4. Verification
 
-1. **Production Build Test**:
-   ```bash
-   npm run build
-   ```
-   *Result:* Successfully transformed modules and generated production bundle in `dist/` with 0 errors.
-
-2. **Development Server Execution**:
-   ```bash
-   cd frontend
-   npm run dev
-   ```
-   Access the local preview at: `http://localhost:5173`
-
+- Production build test: `npm run build` completed with 0 errors.
+- Dev server test: `npm run dev` starts cleanly at `http://localhost:5173`.
