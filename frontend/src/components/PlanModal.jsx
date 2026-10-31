@@ -97,10 +97,8 @@ export default function PlanModal({ isOpen, onClose, onSave, initialData = null 
 
     // Availability dates validation
     if (formData.startDate && formData.endDate) {
-      const start = new Date(formData.startDate);
-      const end = new Date(formData.endDate);
-      if (end < start) {
-        errs.endDate = 'End date cannot be earlier than start date';
+      if (formData.endDate < formData.startDate) {
+        errs.endDate = 'Available Until date cannot be earlier than Available From date';
       }
     }
 
@@ -575,7 +573,7 @@ export default function PlanModal({ isOpen, onClose, onSave, initialData = null 
                     marginBottom: '6px',
                   }}
                 >
-                  Start Date
+                  Available From (Start Date)
                 </label>
                 <input
                   id="plan-startDate"
@@ -609,7 +607,7 @@ export default function PlanModal({ isOpen, onClose, onSave, initialData = null 
                     marginBottom: '6px',
                   }}
                 >
-                  End Date <span style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-helper)' }}>(Optional expiry)</span>
+                  Available Until (End Date) <span style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-helper)' }}>(Optional)</span>
                 </label>
                 <input
                   id="plan-endDate"

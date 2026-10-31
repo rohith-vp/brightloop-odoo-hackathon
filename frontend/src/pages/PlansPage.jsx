@@ -19,6 +19,20 @@ export default function PlansPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [frequencyFilter, setFrequencyFilter] = useState('ALL');
   const [statusFilter, setStatusFilter] = useState('ALL');
+  const [currentSimDate, setCurrentSimDate] = useState(() => planService.getCurrentDate());
+  const isMockedDate = Boolean(planService.getMockCurrentDate());
+
+  const handleSimDateChange = (newDate) => {
+    planService.setMockCurrentDate(newDate);
+    setCurrentSimDate(newDate);
+    loadPlans();
+  };
+
+  const handleResetSimDate = () => {
+    planService.clearMockCurrentDate();
+    setCurrentSimDate(planService.getCurrentDate());
+    loadPlans();
+  };
 
   // Modal states
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
@@ -61,7 +75,9 @@ export default function PlansPage() {
       const matchesFreq =
         frequencyFilter === 'ALL' || plan.billingFrequency === frequencyFilter;
       const matchesStatus =
-        statusFilter === 'ALL' || plan.status === statusFilter;
+        statusFilter === 'ALL' ||
+        plan.status === statusFilter.toLowerCase() ||
+        (statusFilter.toLowerCase() === 'available' && (plan.status === 'available' || plan.status === 'active'));
 
       return matchesSearch && matchesFreq && matchesStatus;
     });
@@ -69,16 +85,16 @@ export default function PlansPage() {
 
   // Metric counts
   const totalPlansCount = plans.length;
-  const activePlansCount = useMemo(
-    () => plans.filter((p) => p.status === 'active').length,
+  const availablePlansCount = useMemo(
+    () => plans.filter((p) => p.status === 'available' || p.status === 'active').length,
     [plans]
   );
-  const monthlyPlansCount = useMemo(
-    () => plans.filter((p) => p.billingFrequency === 'Monthly').length,
+  const upcomingPlansCount = useMemo(
+    () => plans.filter((p) => p.status === 'upcoming').length,
     [plans]
   );
-  const annualPlansCount = useMemo(
-    () => plans.filter((p) => p.billingFrequency === 'Yearly').length,
+  const expiredPlansCount = useMemo(
+    () => plans.filter((p) => p.status === 'expired').length,
     [plans]
   );
 
@@ -215,28 +231,28 @@ export default function PlansPage() {
 
         <div className="card-surface" style={{ padding: 'var(--space-5)' }}>
           <span style={{ fontSize: 'var(--font-size-metric-label)', color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 'var(--font-weight-medium)' }}>
-            Active Plans
+            Available Plans
           </span>
           <div style={{ fontSize: 'var(--font-size-metric-value)', fontWeight: 'var(--font-weight-bold)', color: 'var(--color-primary)', marginTop: '6px' }}>
-            {activePlansCount}
+            {availablePlansCount}
           </div>
         </div>
 
         <div className="card-surface" style={{ padding: 'var(--space-5)' }}>
           <span style={{ fontSize: 'var(--font-size-metric-label)', color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 'var(--font-weight-medium)' }}>
-            Monthly Subscriptions
+            Upcoming Plans
           </span>
-          <div style={{ fontSize: 'var(--font-size-metric-value)', fontWeight: 'var(--font-weight-bold)', color: 'var(--color-secondary)', marginTop: '6px' }}>
-            {monthlyPlansCount}
+          <div style={{ fontSize: 'var(--font-size-metric-value)', fontWeight: 'var(--font-weight-bold)', color: '#D97706', marginTop: '6px' }}>
+            {upcomingPlansCount}
           </div>
         </div>
 
         <div className="card-surface" style={{ padding: 'var(--space-5)' }}>
           <span style={{ fontSize: 'var(--font-size-metric-label)', color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 'var(--font-weight-medium)' }}>
-            Annual Packages
+            Expired Plans
           </span>
-          <div style={{ fontSize: 'var(--font-size-metric-value)', fontWeight: 'var(--font-weight-bold)', color: 'var(--color-secondary)', marginTop: '6px' }}>
-            {annualPlansCount}
+          <div style={{ fontSize: 'var(--font-size-metric-value)', fontWeight: 'var(--font-weight-bold)', color: 'var(--status-overdue-text)', marginTop: '6px' }}>
+            {expiredPlansCount}
           </div>
         </div>
       </div>
@@ -315,10 +331,44 @@ export default function PlansPage() {
               }}
             >
               <option value="ALL">All Statuses</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
+              <option value="available">Available</option>
+              <option value="upcoming">Upcoming</option>
               <option value="expired">Expired</option>
+              <option value="inactive">Inactive</option>
             </select>
+          </div>
+
+          {/* Test / Simulated System Date */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ fontSize: 'var(--font-size-helper)', color: 'var(--color-text-secondary)' }}>System Date:</span>
+            <input
+              type="date"
+              value={currentSimDate}
+              onChange={(e) => handleSimDateChange(e.target.value)}
+              style={{
+                height: '42px',
+                padding: '6px 10px',
+                fontSize: 'var(--font-size-body)',
+                color: 'var(--color-text-main)',
+                backgroundColor: isMockedDate ? 'var(--color-surface-green)' : 'var(--color-surface)',
+                border: `1px solid ${isMockedDate ? 'var(--color-primary)' : 'var(--color-border)'}`,
+                borderRadius: 'var(--radius-sm)',
+                outline: 'none',
+                cursor: 'pointer',
+              }}
+              title="Simulate system date to test plan availability"
+            />
+            {isMockedDate && (
+              <button
+                type="button"
+                onClick={handleResetSimDate}
+                className="btn btn-secondary"
+                style={{ height: '42px', padding: '0 10px', fontSize: '12px' }}
+                title="Reset to current local date"
+              >
+                Reset
+              </button>
+            )}
           </div>
 
           {/* Reset Filters */}
@@ -408,7 +458,17 @@ export default function PlansPage() {
                 filteredPlans.map((plan) => {
                   const availabilityLabel = plan.startDate
                     ? `${plan.startDate} → ${plan.endDate ? plan.endDate : 'Ongoing'}`
+                    : plan.endDate
+                    ? `Until ${plan.endDate}`
                     : 'Ongoing';
+
+                  const displayStatus = plan.availabilityStatus || (plan.status.charAt(0).toUpperCase() + plan.status.slice(1));
+                  const badgeClass =
+                    plan.status === 'available' || plan.status === 'active'
+                      ? 'success'
+                      : plan.status === 'expired'
+                      ? 'overdue'
+                      : 'pending';
 
                   return (
                     <tr key={plan.id}>
@@ -478,16 +538,8 @@ export default function PlansPage() {
 
                       {/* Status */}
                       <td>
-                        <span
-                          className={`status-badge ${
-                            plan.status === 'active'
-                              ? 'success'
-                              : plan.status === 'expired'
-                              ? 'overdue'
-                              : 'pending'
-                          }`}
-                        >
-                          {plan.status.charAt(0).toUpperCase() + plan.status.slice(1)}
+                        <span className={`status-badge ${badgeClass}`}>
+                          {displayStatus}
                         </span>
                       </td>
 

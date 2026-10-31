@@ -5,6 +5,11 @@ import AuthLayout from './layouts/AuthLayout';
 import DashboardPage from './pages/DashboardPage';
 import ProductsPage from './pages/ProductsPage';
 import PlansPage from './pages/PlansPage';
+import SubscriptionsPage from './pages/SubscriptionsPage';
+import QuotationsPage from './pages/QuotationsPage';
+import InvoicesPage from './pages/InvoicesPage';
+import PaymentsPage from './pages/PaymentsPage';
+import DiscountsPage from './pages/DiscountsPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
@@ -76,28 +81,13 @@ export default function App() {
           {/* Main Menu */}
           <Route path="products" element={<ProductsPage />} />
           <Route path="plans" element={<PlansPage />} />
-          <Route
-            path="subscriptions"
-            element={<PlaceholderPage title="Subscriptions" description="Manage customer subscription contracts, active renewals, upgrades, and cancellations." />}
-          />
+          <Route path="subscriptions" element={<SubscriptionsPage />} />
 
           {/* Finance */}
-          <Route
-            path="quotations"
-            element={<PlaceholderPage title="Quotations" description="Create, review, and dispatch commercial quotes and subscription estimates." />}
-          />
-          <Route
-            path="invoices"
-            element={<PlaceholderPage title="Invoices" description="Automated billing invoices, tax breakdowns, overdue notices, and receipt generation." />}
-          />
-          <Route
-            path="payments"
-            element={<PlaceholderPage title="Payments" description="Payment gateway collection records, UPI mandate settlements, and transaction reconciliations." />}
-          />
-          <Route
-            path="discounts"
-            element={<PlaceholderPage title="Discounts" description="Promotional coupons, customer-specific concession rules, and seasonal discount campaigns." />}
-          />
+          <Route path="quotations" element={<QuotationsPage />} />
+          <Route path="invoices" element={<InvoicesPage />} />
+          <Route path="payments" element={<PaymentsPage />} />
+          <Route path="discounts" element={<DiscountsPage />} />
 
           {/* Management */}
           <Route

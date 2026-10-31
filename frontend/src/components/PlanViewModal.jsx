@@ -61,14 +61,14 @@ export default function PlanViewModal({ isOpen, onClose, plan, onEdit }) {
             </span>
             <span
               className={`status-badge ${
-                plan.status === 'active'
+                plan.status === 'available' || plan.status === 'active'
                   ? 'success'
                   : plan.status === 'expired'
                   ? 'overdue'
                   : 'pending'
               }`}
             >
-              {plan.status.charAt(0).toUpperCase() + plan.status.slice(1)}
+              {plan.availabilityStatus || (plan.status.charAt(0).toUpperCase() + plan.status.slice(1))}
             </span>
           </div>
 

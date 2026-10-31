@@ -67,6 +67,26 @@ The typography scale across all Brightloop pages has been improved to ensure opt
      - Full Lifecycle Configuration: Closure (immediately vs end of period), Allow early closure toggle, Allow pause toggle, Renewal policy (automatic vs manual, and enable/disable toggle).
    - Mock data service ([`planService.js`](file:///c:/Users/Rithujith/OneDrive/Desktop/maketon/frontend/src/services/planService.js)) with `localStorage` persistence.
 
+6. **Quotations Module ([`QuotationsPage.jsx`](file:///c:/Users/Rithujith/OneDrive/Desktop/maketon/frontend/src/pages/QuotationsPage.jsx), [`QuotationModal.jsx`](file:///c:/Users/Rithujith/OneDrive/Desktop/maketon/frontend/src/components/QuotationModal.jsx), [`QuotationViewModal.jsx`](file:///c:/Users/Rithujith/OneDrive/Desktop/maketon/frontend/src/components/QuotationViewModal.jsx), [`quotationService.js`](file:///c:/Users/Rithujith/OneDrive/Desktop/maketon/frontend/src/services/quotationService.js))**:
+   - Quotation listing with KPI metrics (Total Quotations, Confirmed Value, Drafts, Expired).
+   - Real-time search, status filter (`Draft`, `Sent`, `Confirmed`, `Cancelled`, `Expired`), and quote date filter.
+   - Multi-section Quotation Creation/Editing Form:
+     - Customer Information: Select from existing customer directory or enter custom customer details.
+     - Quotation Information: Auto-generated quotation numbers (`QT-2026-XXX`), date, expiry date, notes.
+     - Itemized Products & Plans: Multi-line selection with dynamic product and plan loading, quantity, and unit price calculations.
+     - Automatic Financial Summary: Subtotal, percentage or fixed discount, 18% GST tax calculation, and Grand Total in ₹.
+   - Quotation Actions: Save as Draft, Edit Draft, View Quotation, Confirm Quotation, Cancel Quotation, Delete Draft.
+   - Seamless one-click conversion of confirmed quotations to active subscriptions.
+
+7. **Subscriptions Module ([`SubscriptionsPage.jsx`](file:///c:/Users/Rithujith/OneDrive/Desktop/maketon/frontend/src/pages/SubscriptionsPage.jsx), [`SubscriptionModal.jsx`](file:///c:/Users/Rithujith/OneDrive/Desktop/maketon/frontend/src/components/SubscriptionModal.jsx), [`SubscriptionDetailsModal.jsx`](file:///c:/Users/Rithujith/OneDrive/Desktop/maketon/frontend/src/components/SubscriptionDetailsModal.jsx), [`SubscriptionLifecycleModal.jsx`](file:///c:/Users/Rithujith/OneDrive/Desktop/maketon/frontend/src/components/SubscriptionLifecycleModal.jsx), [`subscriptionService.js`](file:///c:/Users/Rithujith/OneDrive/Desktop/maketon/frontend/src/services/subscriptionService.js))**:
+   - Subscriptions listing with KPI metrics (Active Subscriptions, Monthly Recurring Value / MRR, Paused Contracts, Closed / Expired).
+   - Filter by status (`Draft`, `Quotation`, `Confirmed`, `Active`, `Paused`, `Closed`), billing cycle (`Daily`, `Weekly`, `Monthly`, `Yearly`), and product.
+   - Dual-path creation: directly or pre-populated from approved confirmed quotations.
+   - Automated end date and next invoice date calculations based on billing frequency.
+   - Comprehensive Subscription Details view with customer contact information, subscription terms, and interactive **Activity History Timeline** (Created, Confirmed, Activated, Paused, Resumed, Renewed, Closed).
+   - Strict Lifecycle Management: Confirmation modal workflows for Confirm, Activate, Pause, Resume, Renew (configurable month extension), Early Closure, and Manual Closure.
+   - Built-in **Automatic Closure**: Background evaluation on data load to automatically mark expired active/paused contracts as Closed with logged history entries.
+
 ---
 
 ## 3. Verification

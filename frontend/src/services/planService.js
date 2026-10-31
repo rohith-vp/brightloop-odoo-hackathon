@@ -3,12 +3,13 @@
  * Supports full CRUD, lifecycle configuration, and localStorage persistence.
  */
 
-import { productService } from './productService';
+import { productService } from './productService.js';
 
 const STORAGE_KEY = 'brightloop_plans_data';
+const MOCK_CLOCK_KEY = 'brightloop_test_clock';
 
 export const BILLING_FREQUENCIES = ['Daily', 'Weekly', 'Monthly', 'Yearly'];
-export const PLAN_STATUSES = ['active', 'inactive', 'expired'];
+export const PLAN_STATUSES = ['available', 'upcoming', 'expired', 'inactive'];
 
 const INITIAL_PLANS = [
   {
@@ -167,13 +168,89 @@ function saveStoredPlans(plans) {
   }
 }
 
+let mockDateOverride = null;
+
 export const planService = {
-  getPlans() {
-    return loadStoredPlans();
+  setMockCurrentDate(dateStr) {
+    mockDateOverride = dateStr || null;
+    try {
+      if (dateStr) {
+        localStorage.setItem(MOCK_CLOCK_KEY, dateStr);
+      } else {
+        localStorage.removeItem(MOCK_CLOCK_KEY);
+      }
+    } catch {}
   },
 
-  getPlanById(id) {
+  getMockCurrentDate() {
+    if (mockDateOverride) return mockDateOverride;
+    try {
+      const stored = localStorage.getItem(MOCK_CLOCK_KEY);
+      if (stored) {
+        mockDateOverride = stored;
+        return stored;
+      }
+    } catch {}
+    return null;
+  },
+
+  clearMockCurrentDate() {
+    this.setMockCurrentDate(null);
+  },
+
+  getCurrentDate() {
+    const mock = this.getMockCurrentDate();
+    if (mock) return mock;
+
+    // Local calendar date in YYYY-MM-DD format (no UTC timezone shift!)
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  },
+
+  /**
+   * Calculates plan availability status:
+   * - 'Upcoming': if startDate exists and currentDate < startDate
+   * - 'Expired': if endDate exists and currentDate > endDate
+   * - 'Available': if currentDate is within [startDate, endDate] (inclusive)
+   * - 'Inactive': if plan is explicitly inactive/archived
+   */
+  getPlanAvailabilityStatus(plan, currentDate = null) {
+    if (!plan) return 'Available';
+    if (plan.status === 'inactive') return 'Inactive';
+
+    const today = currentDate || this.getCurrentDate();
+    const start = plan.startDate ? plan.startDate.trim() : null;
+    const end = plan.endDate ? plan.endDate.trim() : null;
+
+    if (start && today < start) {
+      return 'Upcoming';
+    }
+
+    if (end && today > end) {
+      return 'Expired';
+    }
+
+    return 'Available';
+  },
+
+  getPlans(currentDate = null) {
     const list = loadStoredPlans();
+    const today = currentDate || this.getCurrentDate();
+    return list.map((p) => {
+      const availStatus = this.getPlanAvailabilityStatus(p, today);
+      return {
+        ...p,
+        availabilityStatus: availStatus,
+        status: p.status === 'inactive' ? 'inactive' : availStatus.toLowerCase(),
+      };
+    });
+  },
+
+  getPlanById(id, currentDate = null) {
+    const list = this.getPlans(currentDate);
     return list.find((p) => p.id === id) || null;
   },
 
@@ -193,7 +270,7 @@ export const planService = {
       minQuantity: Math.max(1, Number(data.minQuantity) || 1),
       startDate: data.startDate || '',
       endDate: data.endDate || '',
-      status: data.status || 'active',
+      status: data.status || 'available',
       lifecycle: {
         closureMode: data.lifecycle?.closureMode || 'manual',
         allowEarlyClosure: Boolean(data.lifecycle?.allowEarlyClosure ?? true),
@@ -234,7 +311,7 @@ export const planService = {
       minQuantity: data.minQuantity !== undefined ? Math.max(1, Number(data.minQuantity)) : existing.minQuantity,
       startDate: data.startDate !== undefined ? data.startDate : existing.startDate,
       endDate: data.endDate !== undefined ? data.endDate : existing.endDate,
-      status: data.status || existing.status,
+      status: data.status !== undefined ? data.status : existing.status,
       lifecycle: {
         ...existing.lifecycle,
         ...(data.lifecycle || {}),
