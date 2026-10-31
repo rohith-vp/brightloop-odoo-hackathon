@@ -15,21 +15,41 @@ import {
   Download,
 } from 'lucide-react';
 import {
-  AreaChart,
-  Area,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
+  CartesianGrid,
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
 
-const revenueChartData = [
-  { month: 'May', revenue: 68400 },
-  { month: 'Jun', revenue: 79200 },
-  { month: 'Jul', revenue: 84500 },
-  { month: 'Aug', revenue: 98100 },
-  { month: 'Sep', revenue: 112000 },
-  { month: 'Oct', revenue: 124580 },
+const monthlyBarData = [
+  { label: 'Jan', revenue: 48000, payments: 44500 },
+  { label: 'Feb', revenue: 52000, payments: 49200 },
+  { label: 'Mar', revenue: 59000, payments: 56000 },
+  { label: 'Apr', revenue: 64000, payments: 61200 },
+  { label: 'May', revenue: 68400, payments: 65100 },
+  { label: 'Jun', revenue: 79200, payments: 74800 },
+  { label: 'Jul', revenue: 84500, payments: 80200 },
+  { label: 'Aug', revenue: 98100, payments: 91400 },
+  { label: 'Sep', revenue: 112000, payments: 104500 },
+  { label: 'Oct', revenue: 124580, payments: 112150 },
+  { label: 'Nov', revenue: 118000, payments: 109000 },
+  { label: 'Dec', revenue: 132000, payments: 125000 },
+];
+
+const quarterlyBarData = [
+  { label: 'Q1', revenue: 159000, payments: 149700 },
+  { label: 'Q2', revenue: 211600, payments: 201100 },
+  { label: 'Q3', revenue: 294600, payments: 276100 },
+  { label: 'Q4', revenue: 374580, payments: 346150 },
+];
+
+const yearlyBarData = [
+  { label: '2024', revenue: 580000, payments: 542000 },
+  { label: '2025', revenue: 820000, payments: 775000 },
+  { label: '2026', revenue: 1039780, payments: 973050 },
 ];
 
 const recentActivities = [
@@ -145,9 +165,18 @@ const customerEvents = [
 
 export default function DashboardPage() {
   const [dateRange, setDateRange] = useState('30d');
+  const [chartFilter, setChartFilter] = useState('monthly');
+
+  const activeChartData =
+    chartFilter === 'quarterly'
+      ? quarterlyBarData
+      : chartFilter === 'yearly'
+      ? yearlyBarData
+      : monthlyBarData;
 
   const handleResetFilter = () => {
     setDateRange('30d');
+    setChartFilter('monthly');
   };
 
   return (
@@ -729,13 +758,15 @@ export default function DashboardPage() {
 
         {/* RIGHT SECTION */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-          {/* Monthly Revenue Chart */}
+          {/* Monthly Revenue Bar Chart */}
           <div className="card-surface" style={{ padding: 'var(--space-5)' }}>
             <div
               style={{
                 display: 'flex',
-                alignItems: 'center',
+                alignItems: 'flex-start',
                 justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: 'var(--space-3)',
                 marginBottom: 'var(--space-4)',
               }}
             >
@@ -747,46 +778,114 @@ export default function DashboardPage() {
                     color: 'var(--color-secondary)',
                   }}
                 >
-                  Monthly Revenue Trajectory
+                  Revenue Overview
                 </h2>
                 <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>
-                  Subscription billing collections
+                  Revenue vs Payments Received comparison
                 </span>
               </div>
 
+              {/* Monthly, Quarterly and Yearly Filter Toggle */}
               <div
                 style={{
-                  display: 'inline-flex',
+                  display: 'flex',
                   alignItems: 'center',
-                  gap: '4px',
-                  fontSize: '11px',
-                  fontWeight: 'var(--font-weight-semibold)',
-                  color: 'var(--color-primary)',
-                  backgroundColor: 'var(--color-surface-green)',
-                  padding: '3px 8px',
-                  borderRadius: 'var(--radius-xs)',
+                  backgroundColor: '#F3F5F4',
+                  padding: '2px',
+                  borderRadius: 'var(--radius-sm)',
+                  border: '1px solid var(--color-border)',
                 }}
               >
-                <ArrowUpRight size={13} />
-                +18.4% YoY
+                {[
+                  { key: 'monthly', label: 'Monthly' },
+                  { key: 'quarterly', label: 'Quarterly' },
+                  { key: 'yearly', label: 'Yearly' },
+                ].map((tab) => (
+                  <button
+                    key={tab.key}
+                    type="button"
+                    onClick={() => setChartFilter(tab.key)}
+                    style={{
+                      padding: '4px 10px',
+                      fontSize: '11px',
+                      fontWeight:
+                        chartFilter === tab.key
+                          ? 'var(--font-weight-semibold)'
+                          : 'var(--font-weight-medium)',
+                      color:
+                        chartFilter === tab.key
+                          ? 'var(--color-secondary)'
+                          : 'var(--color-text-secondary)',
+                      backgroundColor: chartFilter === tab.key ? '#FFFFFF' : 'transparent',
+                      borderRadius: 'var(--radius-xs)',
+                      boxShadow:
+                        chartFilter === tab.key ? '0 1px 2px rgba(23, 25, 24, 0.06)' : 'none',
+                      transition: 'all 0.15s ease',
+                    }}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
               </div>
             </div>
 
-            {/* Recharts Area Visualization */}
-            <div style={{ height: '220px', width: '100%', marginTop: 'var(--space-2)' }}>
+            {/* Chart Legend */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 'var(--space-4)',
+                marginBottom: 'var(--space-3)',
+                fontSize: '11px',
+                color: 'var(--color-text-secondary)',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span
+                  style={{
+                    width: '10px',
+                    height: '10px',
+                    borderRadius: '2px',
+                    backgroundColor: '#087A4B',
+                    display: 'inline-block',
+                  }}
+                />
+                <span style={{ fontWeight: 'var(--font-weight-medium)', color: 'var(--color-text-main)' }}>
+                  Revenue
+                </span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span
+                  style={{
+                    width: '10px',
+                    height: '10px',
+                    borderRadius: '2px',
+                    backgroundColor: '#52B788',
+                    display: 'inline-block',
+                  }}
+                />
+                <span style={{ fontWeight: 'var(--font-weight-medium)', color: 'var(--color-text-main)' }}>
+                  Payments Received
+                </span>
+              </div>
+            </div>
+
+            {/* Recharts Vertical BarChart Visualization */}
+            <div style={{ height: '240px', width: '100%', marginTop: 'var(--space-1)' }}>
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart
-                  data={revenueChartData}
+                <BarChart
+                  data={activeChartData}
                   margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                  barGap={3}
+                  barCategoryGap={chartFilter === 'monthly' ? '18%' : '28%'}
                 >
-                  <defs>
-                    <linearGradient id="emeraldGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#087A4B" stopOpacity={0.25} />
-                      <stop offset="95%" stopColor="#087A4B" stopOpacity={0.0} />
-                    </linearGradient>
-                  </defs>
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    vertical={false}
+                    stroke="#E7EAE8"
+                  />
                   <XAxis
-                    dataKey="month"
+                    dataKey="label"
                     tickLine={false}
                     axisLine={{ stroke: '#E7EAE8' }}
                     tick={{ fill: '#858B87', fontSize: 11 }}
@@ -795,27 +894,47 @@ export default function DashboardPage() {
                     tickLine={false}
                     axisLine={false}
                     tick={{ fill: '#858B87', fontSize: 11 }}
-                    tickFormatter={(val) => `₹${val / 1000}k`}
+                    tickFormatter={(val) =>
+                      val >= 100000 ? `₹${(val / 100000).toFixed(1)}L` : `₹${val / 1000}k`
+                    }
                   />
                   <Tooltip
+                    cursor={{ fill: 'rgba(23, 25, 24, 0.04)' }}
                     contentStyle={{
                       backgroundColor: '#FFFFFF',
                       border: '1px solid #E7EAE8',
                       borderRadius: '6px',
                       fontSize: '12px',
                       boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                      padding: '8px 12px',
                     }}
-                    formatter={(value) => [`₹${value.toLocaleString()}`, 'Revenue']}
+                    formatter={(value, name) => [
+                      `₹${value.toLocaleString()}`,
+                      name === 'revenue' ? 'Revenue' : 'Payments Received',
+                    ]}
+                    labelFormatter={(label) =>
+                      chartFilter === 'monthly'
+                        ? `Month: ${label}`
+                        : chartFilter === 'quarterly'
+                        ? `Quarter: ${label}`
+                        : `Year: ${label}`
+                    }
                   />
-                  <Area
-                    type="monotone"
+                  <Bar
                     dataKey="revenue"
-                    stroke="#087A4B"
-                    strokeWidth={2}
-                    fillOpacity={1}
-                    fill="url(#emeraldGradient)"
+                    name="revenue"
+                    fill="#087A4B"
+                    radius={[3, 3, 0, 0]}
+                    maxBarSize={14}
                   />
-                </AreaChart>
+                  <Bar
+                    dataKey="payments"
+                    name="payments"
+                    fill="#52B788"
+                    radius={[3, 3, 0, 0]}
+                    maxBarSize={14}
+                  />
+                </BarChart>
               </ResponsiveContainer>
             </div>
           </div>
