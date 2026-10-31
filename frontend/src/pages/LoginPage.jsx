@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import PasswordInput from '../components/PasswordInput';
 import { Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { useAuth } from '../auth/AuthContext';
+import { ApiError } from '../services/api';
+import { validateLogin, hasErrors } from '../lib/validation';
+import { Notice } from '../components/forms';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -13,25 +17,14 @@ export default function LoginPage() {
   });
 
   const [errors, setErrors] = useState({});
+  const [formError, setFormError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [loginSuccess, setLoginSuccess] = useState(false);
 
-  const validate = () => {
-    const newErrors = {};
-
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email address is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
-      newErrors.email = 'Please enter a valid email address';
-    }
-
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+  const { login } = useAuth();
+  const location = useLocation();
+  const notice = location.state?.notice;
+  const destination = location.state?.from ?? '/';
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -45,32 +38,30 @@ export default function LoginPage() {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!validate()) return;
+    const validationErrors = validateLogin(formData);
+    setErrors(validationErrors);
+    if (hasErrors(validationErrors)) return;
 
+    setFormError('');
     setIsLoading(true);
-
-    // Simulated authenticating state
-    setTimeout(() => {
+    try {
+      await login(formData.email.trim(), formData.password);
       setIsLoading(false);
       setLoginSuccess(true);
-
-      // Redirect to dashboard
-      setTimeout(() => {
-        navigate('/');
-      }, 500);
-    }, 750);
-  };
-
-  const handleFillDemo = () => {
-    setFormData({
-      email: 'admin@brightloop.io',
-      password: 'Password@123',
-      rememberMe: true,
-    });
-    setErrors({});
+      setTimeout(() => navigate(destination, { replace: true }), 500);
+    } catch (err) {
+      setIsLoading(false);
+      if (err instanceof ApiError && err.status === 401) {
+        setFormError('Invalid email or password.');
+      } else if (err instanceof ApiError && err.status === 422) {
+        setErrors(err.details);
+      } else {
+        setFormError(err.message);
+      }
+    }
   };
 
   return (
@@ -113,6 +104,17 @@ export default function LoginPage() {
       )}
 
       {/* Form */}
+      {notice && !formError && (
+        <div style={{ marginBottom: 'var(--space-4)' }}>
+          <Notice tone="success">{notice}</Notice>
+        </div>
+      )}
+      {formError && (
+        <div style={{ marginBottom: 'var(--space-4)' }}>
+          <Notice>{formError}</Notice>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} noValidate style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
         {/* Email Field */}
         <div>
@@ -282,29 +284,6 @@ export default function LoginPage() {
           {isLoading && <Loader2 size={16} className="spin-loader" />}
           <span>{isLoading ? 'Signing in...' : 'Sign in to Brightloop'}</span>
         </button>
-
-        {/* Demo Quick-Fill Pill for Evaluators */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginTop: '2px',
-          }}
-        >
-          <button
-            type="button"
-            onClick={handleFillDemo}
-            style={{
-              fontSize: '11px',
-              color: 'var(--color-text-secondary)',
-              textDecoration: 'underline',
-              padding: '2px 6px',
-            }}
-          >
-            Auto-fill demo credentials
-          </button>
-        </div>
       </form>
 
       {/* Link to Signup */}

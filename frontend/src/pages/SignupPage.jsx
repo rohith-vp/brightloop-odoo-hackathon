@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import PasswordInput from '../components/PasswordInput';
-import { Loader2, AlertCircle, CheckCircle2, Check, X } from 'lucide-react';
+import { Loader2, AlertCircle, CheckCircle2, Check } from 'lucide-react';
+import { authApi, ApiError } from '../services/api';
+import { validateSignup, hasErrors, PASSWORD_RULES } from '../lib/validation';
+import { Notice } from '../components/forms';
 
 export default function SignupPage() {
   const navigate = useNavigate();
@@ -16,60 +19,20 @@ export default function SignupPage() {
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [signupSuccess, setSignupSuccess] = useState(false);
+  const [formError, setFormError] = useState('');
 
-  // Dynamic password criteria validation
-  const passwordCriteria = [
-    {
-      id: 'length',
-      label: 'Minimum 8 characters',
-      valid: formData.password.length >= 8,
-    },
-    {
-      id: 'uppercase',
-      label: 'At least one uppercase letter (A-Z)',
-      valid: /[A-Z]/.test(formData.password),
-    },
-    {
-      id: 'lowercase',
-      label: 'At least one lowercase letter (a-z)',
-      valid: /[a-z]/.test(formData.password),
-    },
-    {
-      id: 'special',
-      label: 'At least one special character (!@#$%^&*)',
-      valid: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(formData.password),
-    },
-  ];
+  // Live password checklist. The rules are shared with the backend's rules via lib/validation.js.
+  const passwordCriteria = PASSWORD_RULES.map((rule) => ({
+    id: rule.id,
+    label: rule.label,
+    valid: rule.test(formData.password),
+  }));
 
-  const allCriteriaMet = passwordCriteria.every((c) => c.valid);
 
   const validate = () => {
-    const newErrors = {};
-
-    if (!formData.fullName.trim()) {
-      newErrors.fullName = 'Full name is required';
-    }
-
-    if (!formData.email.trim()) {
-      newErrors.email = 'Work email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
-      newErrors.email = 'Please enter a valid work email address';
-    }
-
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-    } else if (!allCriteriaMet) {
-      newErrors.password = 'Please satisfy all password criteria';
-    }
-
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'Confirm your password';
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
-    }
-
+    const newErrors = validateSignup(formData);
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return !hasErrors(newErrors);
   };
 
   const handleChange = (e) => {
@@ -84,23 +47,42 @@ export default function SignupPage() {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!validate()) return;
 
+    setFormError('');
     setIsLoading(true);
-
-    // Simulated registration
-    setTimeout(() => {
+    try {
+      await authApi.signup({
+        name: formData.fullName.trim(),
+        email: formData.email.trim(),
+        password: formData.password,
+      });
       setIsLoading(false);
       setSignupSuccess(true);
-
-      // Redirect after showing success feedback
       setTimeout(() => {
-        navigate('/login');
+        navigate('/login', {
+          replace: true,
+          state: { notice: 'Your account is ready. Sign in to continue.' },
+        });
       }, 1200);
-    }, 850);
+    } catch (err) {
+      setIsLoading(false);
+      if (err instanceof ApiError && err.status === 422) {
+        // Map server field names onto the form's field names.
+        setErrors({
+          fullName: err.details.name,
+          email: err.details.email,
+          password: err.details.password,
+        });
+      } else if (err instanceof ApiError && err.status === 409) {
+        setErrors((prev) => ({ ...prev, email: 'An account with this email already exists' }));
+      } else {
+        setFormError(err.message);
+      }
+    }
   };
 
   return (
@@ -139,6 +121,12 @@ export default function SignupPage() {
         >
           <CheckCircle2 size={16} />
           <span>Account created successfully! Redirecting to sign in...</span>
+        </div>
+      )}
+
+      {formError && (
+        <div style={{ marginBottom: 'var(--space-4)' }}>
+          <Notice>{formError}</Notice>
         </div>
       )}
 

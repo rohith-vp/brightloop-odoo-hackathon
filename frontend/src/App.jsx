@@ -6,6 +6,9 @@ import DashboardPage from './pages/DashboardPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ProductsPage from './pages/ProductsPage';
+import PlansPage from './pages/PlansPage';
+import { AuthProvider, RequireAuth } from './auth/AuthContext';
 
 function PlaceholderPage({ title, description }) {
   return (
@@ -59,6 +62,7 @@ function PlaceholderPage({ title, description }) {
 
 export default function App() {
   return (
+    <AuthProvider>
     <BrowserRouter>
       <Routes>
         {/* Authentication Routes */}
@@ -69,17 +73,11 @@ export default function App() {
         </Route>
 
         {/* Protected Dashboard & Management Shell */}
-        <Route path="/" element={<MainLayout />}>
+        <Route path="/" element={<RequireAuth><MainLayout /></RequireAuth>}>
           <Route index element={<DashboardPage />} />
           {/* Main Menu */}
-          <Route
-            path="products"
-            element={<PlaceholderPage title="Products" description="Manage subscription products, recurring service items, and hardware packages." />}
-          />
-          <Route
-            path="plans"
-            element={<PlaceholderPage title="Plans" description="Configure pricing tiers, billing cycles, quotas, and feature entitlements." />}
-          />
+          <Route path="products" element={<ProductsPage />} />
+          <Route path="plans" element={<PlansPage />} />
           <Route
             path="subscriptions"
             element={<PlaceholderPage title="Subscriptions" description="Manage customer subscription contracts, active renewals, upgrades, and cancellations." />}
@@ -122,5 +120,6 @@ export default function App() {
         </Route>
       </Routes>
     </BrowserRouter>
+    </AuthProvider>
   );
 }
