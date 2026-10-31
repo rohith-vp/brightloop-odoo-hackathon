@@ -1,117 +1,53 @@
-# Brightloop Frontend Foundation - Setup Walkthrough
+# Brightloop - Frontend Architecture & Phase 2 Authentication UI
 
-This document outlines the foundation setup completed for the **Brightloop** Subscription Management System frontend.
-
----
-
-## 1. Project Initialization & Dependencies
-
-A fresh React + Vite application using JavaScript (JSX) was initialized in the `frontend` directory.
-
-### Installed Dependencies:
-- **`react-router-dom` (`^7.18.5`)**: Client-side routing with nested layouts.
-- **`lucide-react` (`^1.65.0`)**: Consistent, lightweight SVG icon set.
-- **`recharts` (`^3.10.1`)**: Charting library prepared for future analytics/metrics.
-- **`react` & `react-dom` (`^19.2.8`)**: Core React library.
+This document details the foundation setup, Phase 1 visual redesign, and **Phase 2 Authentication UI** for the **Brightloop** Subscription Management System.
 
 ---
 
-## 2. Design Tokens & Styling Architecture
+## 1. Authentication Screens Overview
 
-All design variables are centralized in `src/styles/tokens.css` (aliased at `src/tokens.css`).
+All authentication screens are wrapped inside [`src/layouts/AuthLayout.jsx`](file:///c:/Users/Rithujith/OneDrive/Desktop/maketon/frontend/src/layouts/AuthLayout.jsx) adhering to Brightloop's fintech design system (`#087A4B` Emerald Green, `#171918` Charcoal, `#F3F5F4` Soft Grey).
 
-### Core Colour Palette:
-- **Primary**: `#243B64` (Used for sidebar, brand accents, and primary headings)
-- **Secondary**: `#4F46E5` (Used for active navigation indicators and badges)
-- **Background**: `#F8FAFC` (Used for root page background)
-
-### Typography:
-- **Font**: **Inter** is the exclusive font family configured across the application.
-- Loaded in `index.html` via Google Fonts (`weights: 400, 500, 600, 700`).
-
-### Spacing Scale:
-```css
---space-1: 4px;
---space-2: 8px;
---space-3: 12px;
---space-4: 16px;
---space-5: 20px;
---space-6: 24px;
---space-8: 32px;
---space-10: 40px;
---space-12: 48px;
-```
-
-### Responsive Breakpoints:
-- **Mobile**: `640px`
-- **Tablet**: `768px`
-- **Desktop**: `1024px`
-- **Large Desktop**: `1280px`
+### Routes:
+- **`/login`**: Sign-in portal with email validation, password show/hide, remember me checkbox, loading state, demo credentials auto-fill, and mock redirect to dashboard.
+- **`/signup`**: Account creation with real-time password criteria checklist (8+ chars, uppercase, lowercase, special char), password matching, and simulated registration.
+- **`/forgot-password`**: Password recovery with email validation, simulated link dispatch, and dedicated check-email success view with resend option.
 
 ---
 
-## 3. Folder Structure
-
-The project structure was organized cleanly for maintainability and scalability:
+## 2. Component Structure
 
 ```
-frontend/
-├── public/
-│   └── vite.svg
-├── src/
-│   ├── assets/              # Static assets (images, logos)
-│   ├── components/          # Reusable UI components
-│   │   ├── Navbar.jsx       # Top navigation bar with mobile toggle
-│   │   └── Sidebar.jsx      # Navigation sidebar with brand & links
-│   ├── layouts/             # App-level layout wrappers
-│   │   └── MainLayout.jsx   # Shell layout integrating Navbar, Sidebar, and Outlet
-│   ├── pages/               # Route view components
-│   │   └── DashboardPage.jsx# Initial overview landing page
-│   ├── services/            # API services and business logic
-│   │   └── api.js           # Base client configuration
-│   ├── styles/              # Global CSS & tokens
-│   │   └── tokens.css       # Centralized design tokens
-│   ├── App.jsx              # React Router route configuration
-│   ├── index.css            # Base styles, resets, and layout media queries
-│   ├── main.jsx             # React DOM entrypoint
-│   └── tokens.css           # Root-level token re-export
-├── index.html               # HTML template with Inter font preconnect
-├── package.json             # Scripts & dependency definitions
-└── vite.config.js           # Vite build configuration
+frontend/src/
+├── components/
+│   ├── Navbar.jsx           # Compact header with breadcrumbs and user trigger
+│   ├── Sidebar.jsx          # White sidebar with grouped navigation & sign-out button
+│   └── PasswordInput.jsx    # Reusable input with toggleable show/hide eye icons
+├── layouts/
+│   ├── AuthLayout.jsx       # Centered card layout with Brightloop branding & security badge
+│   └── MainLayout.jsx       # Protected shell with Sidebar, Navbar, and content container
+├── pages/
+│   ├── DashboardPage.jsx    # Subscription dashboard with vertical bar chart & metrics
+│   ├── LoginPage.jsx        # Login page with mock authentication
+│   ├── SignupPage.jsx       # Signup page with live criteria checklist
+│   └── ForgotPasswordPage.jsx # Password reset page with success view
+├── styles/
+│   └── tokens.css           # Centralized design tokens
+├── App.jsx                  # Route definitions
+└── index.css                # Base styles & spin-loader keyframe
 ```
 
 ---
 
-## 4. Layout Architecture
+## 3. Verification & Local Testing
 
-### `MainLayout.jsx`
-- Manages sidebar toggle state (`sidebarOpen`).
-- Provides a click-away backdrop overlay on mobile and tablet screens.
-- Houses the `<Navbar />`, `<Sidebar />`, and `<main className="layout-content"><Outlet /></main>`.
-
-### `Sidebar.jsx`
-- Fixed on desktop with a fixed width of `260px` and primary `#243B64` background.
-- Transforms into an off-canvas drawer on screens `<= 768px`.
-- Navigation items styled with `#4F46E5` when active.
-
-### `Navbar.jsx`
-- Sticky top header at `64px` height with subtle bottom border.
-- Features mobile hamburger button (`Menu` icon) that automatically hides on desktop screens.
-
----
-
-## 5. Verification & Running the Project
-
-1. **Production Build Test**:
-   ```bash
-   npm run build
-   ```
-   *Result:* Successfully transformed modules and generated production bundle in `dist/` with 0 errors.
-
-2. **Development Server Execution**:
-   ```bash
-   cd frontend
-   npm run dev
-   ```
-   Access the local preview at: `http://localhost:5173`
-
+- **Production Build**: `npm run build` completed with 0 errors.
+- **Local Dev Server**:
+  ```bash
+  cd frontend
+  npm run dev
+  ```
+  - Access Dashboard: `http://localhost:5173/`
+  - Access Sign In: `http://localhost:5173/login`
+  - Access Sign Up: `http://localhost:5173/signup`
+  - Access Forgot Password: `http://localhost:5173/forgot-password`
