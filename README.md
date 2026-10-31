@@ -14,6 +14,7 @@ docker compose up --build
 | Service | URL / port | Notes |
 |---|---|---|
 | Web (React + Vite) | http://localhost:5173 | Hot reload from `frontend/` |
+| API (Express) | http://localhost:8000/api | Health check at `/api/health` |
 | PostgreSQL 16 | localhost:5432 | User, password, and DB from `.env` |
 
 Stop with `docker compose down`. Database data persists in the `postgres_data` volume. To wipe it, run `docker compose down -v`.
@@ -34,6 +35,38 @@ docker compose up web
 docker compose exec db psql -U brightloop -d brightloop
 ```
 
-## Services not yet in this stack
+### Checking the API
 
-The API (`apps/api`) is not in the repo yet. When it is, add an `api` service to `docker-compose.yml` and set `DATABASE_URL` to use host `db`, as already shown in `.env.example`.
+```bash
+curl http://localhost:8000/api/health
+# {"data":{"status":"ok","database":"up"}}
+```
+
+A 503 response means the API is running but cannot reach PostgreSQL.
+
+### Running backend tests
+
+```bash
+docker compose run --rm api npm test
+```
+
+Or locally, with Node 22+ and `cd backend && npm install`:
+
+```bash
+cd backend && npm test
+```
+
+### Backend layout
+
+```
+backend/
+├── src/
+│   ├── index.js        # Startup and graceful shutdown
+│   ├── app.js          # Express app: middleware, routes, error handling
+│   ├── config.js       # Environment variable validation (Zod)
+│   ├── db.js           # PostgreSQL connection pool
+│   └── routes/         # One file per resource
+└── test/
+```
+
+New routes go in `src/routes/`, and are mounted in `src/app.js`.
