@@ -1,4 +1,3 @@
-import { subscriptionsRouter } from './routes/subscriptions.js';
 import express from 'express';
 import cors from 'cors';
 import { healthRouter } from './routes/health.js';
@@ -13,7 +12,6 @@ import { billingRouter } from './routes/billing.js';
 import { taxesRouter } from './routes/taxes.js';
 import { discountsRouter } from './routes/discounts.js';
 import { ApiError, translateDbError } from './errors.js';
-import { invoicesRouter } from './routes/invoice.js';
 
 // Default authentication: attaches no user, so protected routes return 401.
 // index.js passes the JWT authenticator in.
@@ -45,8 +43,6 @@ export function createApp({
   app.use('/api/subscriptions', subscriptionsRouter({ db }));
   app.use('/api/invoices', invoicesRouter({ db }));
   app.use('/api', variantsRouter({ db }));
-  app.use('/api/subscriptions', subscriptionsRouter({ db }));
-  app.use('/api/invoices', invoicesRouter({ db }));
   app.use('/api/billing', billingRouter({ db }));
   app.use('/api/taxes', taxesRouter({ db }));
   app.use('/api/discount-rules', discountsRouter({ db }));
