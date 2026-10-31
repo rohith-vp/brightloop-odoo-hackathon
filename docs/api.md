@@ -1,0 +1,541 @@
+# API Endpoint List
+
+This document is the proposed API contract for the Brightloop demo. It
+is intended to let the frontend build mock responses before backend
+endpoints are complete.
+
+The mission plan requires sign-up/login, Admin and Customer roles,
+admin-assigned Staff access, product/variant/plan/tax setup,
+subscription lifecycle, batch invoicing, discounts, payments, a finance
+dashboard, and a read-only customer portal.
+
+> **Contract note:** The mission plan specifies features, not exact
+> URLs, HTTP methods, or JSON field names. The routes and payloads below
+> are a suggested REST-style contract for the team to implement
+> consistently. Confirm names and optional fields with the backend owner
+> before treating this as a finalized API specification.
+
+## 1. Conventions
+
+-   Base URL: `/api`
+-   JSON request and response bodies.
+-   Authentication: bearer access token in
+    `Authorization: Bearer <token>`.
+-   IDs are opaque strings in examples; the backend may use UUIDs or
+    another consistent format.
+-   Dates use ISO 8601 (`YYYY-MM-DD`); timestamps use ISO 8601 with
+    timezone.
+-   Monetary values are decimal strings in API payloads to avoid
+    floating-point rounding errors.
+-   List endpoints should support pagination. Suggested query
+    parameters: `page`, `page_size`.
+-   All authorization and business-rule validation must be enforced
+    server-side.
+
+### Suggested response shape
+
+Success:
+
+``` json
+{
+  "data": {},
+  "meta": {}
+}
+```
+
+Error:
+
+``` json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Quantity is below the plan minimum.",
+    "details": {
+      "quantity": "Minimum quantity is 2."
+    }
+  }
+}
+```
+
+Suggested status codes: `200` success, `201` created, `204` successful
+delete/no body, `400` malformed request, `401` unauthenticated, `403`
+forbidden, `404` not found, `409` state/conflict or duplicate resource,
+and `422` validation failure.
+
+## 2. Authentication and users
+
+  ------------------------------------------------------------------------------
+  Method            Endpoint                 Purpose           Access
+  ----------------- ------------------------ ----------------- -----------------
+  `POST`            `/auth/signup`           Create a customer Public
+                                             account; enforce  
+                                             password rules    
+                                             and unique email  
+
+  `POST`            `/auth/login`            Authenticate and  Public
+                                             return access     
+                                             token and user    
+                                             details           
+
+  `GET`             `/auth/me`               Return the        Authenticated
+                                             current user's    
+                                             profile and role  
+
+  `GET`             `/users`                 List users for    Admin
+                                             staff/role        
+                                             administration    
+
+  `PATCH`           `/users/{userId}/role`   Assign or change  Admin
+                                             a user's role,    
+                                             including Staff   
+  ------------------------------------------------------------------------------
+
+### Sign-up request
+
+``` json
+{
+  "name": "Asha",
+  "email": "asha@example.com",
+  "password": "ExamplePassword123!"
+}
+```
+
+### Login request and response
+
+``` json
+{
+  "email": "asha@example.com",
+  "password": "ExamplePassword123!"
+}
+```
+
+``` json
+{
+  "data": {
+    "access_token": "mock-access-token",
+    "token_type": "Bearer",
+    "user": {
+      "id": "user_001",
+      "name": "Asha",
+      "email": "asha@example.com",
+      "role": "CUSTOMER"
+    }
+  }
+}
+```
+
+Roles used in the demo: `ADMIN`, `STAFF`, `CUSTOMER`. The mission plan
+explicitly identifies Admin and Customer sign-up/login roles and says
+Staff is assigned by an admin. Do not expose role assignment in public
+sign-up.
+
+## 3. Products, variants, plans, and taxes
+
+  ----------------------------------------------------------------------------------------
+  Method            Endpoint                           Purpose           Access
+  ----------------- ---------------------------------- ----------------- -----------------
+  `GET`             `/products`                        List products     Authenticated
+
+  `POST`            `/products`                        Create a product  Admin/Staff
+
+  `GET`             `/products/{productId}`            Get product       Authenticated
+                                                       details and       
+                                                       variants          
+
+  `POST`            `/products/{productId}/variants`   Add a product     Admin/Staff
+                                                       variant           
+
+  `GET`             `/plans`                           List subscription Authenticated
+                                                       plans             
+
+  `POST`            `/plans`                           Create a monthly  Admin/Staff
+                                                       plan with minimum 
+                                                       quantity and end  
+                                                       behavior          
+
+  `GET`             `/plans/{planId}`                  Get plan details  Authenticated
+
+  `GET`             `/taxes`                           List tax          Admin/Staff
+                                                       configurations    
+
+  `POST`            `/taxes`                           Create a tax      Admin/Staff
+                                                       configuration     
+  ----------------------------------------------------------------------------------------
+
+### Product example
+
+``` json
+{
+  "data": {
+    "id": "product_001",
+    "name": "Workspace",
+    "variants": [
+      {
+        "id": "variant_001",
+        "name": "Standard",
+        "price_per_seat": "100.00",
+        "currency": "INR"
+      }
+    ]
+  }
+}
+```
+
+The mission plan calls for one product and one variant, with the Odoo
+variant adding 560. The exact meaning and representation of that Odoo
+adjustment should be agreed with the backend; do not assume it is a tax
+or a recurring charge.
+
+### Plan creation example
+
+``` json
+{
+  "name": "Monthly Workspace",
+  "product_variant_id": "variant_001",
+  "billing_interval": "MONTH",
+  "minimum_quantity": 2,
+  "end_behavior": "AUTO_CLOSE"
+}
+```
+
+Supported demo end behaviors: `AUTO_CLOSE` and `MANUAL_CLOSE`.
+
+### Tax example
+
+``` json
+{
+  "name": "Standard tax",
+  "rate_percent": "10.00"
+}
+```
+
+## 4. Subscriptions
+
+  ------------------------------------------------------------------------------------------------------
+  Method            Endpoint                                      Purpose              Access
+  ----------------- --------------------------------------------- -------------------- -----------------
+  `GET`             `/subscriptions`                              List subscriptions;  Admin/Staff
+                                                                  support pagination   
+                                                                  and filters          
+
+  `POST`            `/subscriptions`                              Create a Draft       Admin/Staff
+                                                                  subscription from a  
+                                                                  plan                 
+
+  `GET`             `/subscriptions/{subscriptionId}`             Get subscription     Admin/Staff;
+                                                                  details              owner via portal
+
+  `POST`            `/subscriptions/{subscriptionId}/confirm`     Move Draft →         Admin/Staff
+                                                                  Confirmed            
+
+  `POST`            `/subscriptions/{subscriptionId}/activate`    Move Confirmed →     Admin/Staff
+                                                                  Active               
+
+  `POST`            `/subscriptions/{subscriptionId}/close`       Move Active → Closed Admin/Staff
+
+  `POST`            `/subscriptions/{subscriptionId}/duplicate`   Duplicate a          Admin/Staff
+                                                                  subscription as the  
+                                                                  quotation-template   
+                                                                  substitute           
+  ------------------------------------------------------------------------------------------------------
+
+### Create subscription request
+
+``` json
+{
+  "customer_id": "user_001",
+  "plan_id": "plan_001",
+  "quantity": 3,
+  "start_date": "2026-10-01"
+}
+```
+
+### Subscription response
+
+``` json
+{
+  "data": {
+    "id": "sub_001",
+    "customer_id": "user_001",
+    "plan_id": "plan_001",
+    "quantity": 3,
+    "status": "DRAFT",
+    "start_date": "2026-10-01",
+    "end_behavior": "AUTO_CLOSE"
+  }
+}
+```
+
+Allowed states and transitions:
+
+``` text
+DRAFT → CONFIRMED → ACTIVE → CLOSED
+```
+
+The backend must reject invalid transitions and quantities below the
+plan minimum. The frontend should update its displayed status from the
+API response rather than assuming a transition succeeded.
+
+Suggested list filters: `status`, `customer_id`, `plan_id`.
+
+## 5. Invoices and batch billing
+
+  ---------------------------------------------------------------------------------
+  Method            Endpoint                  Purpose             Access
+  ----------------- ------------------------- ------------------- -----------------
+  `GET`             `/invoices`               List invoices;      Admin/Staff
+                                              support pagination  
+                                              and filters         
+
+  `GET`             `/invoices/{invoiceId}`   Get invoice details Admin/Staff;
+                                              and                 owner via portal
+                                              line/tax/discount   
+                                              breakdown           
+
+  `POST`            `/billing/run`            Generate invoices   Admin/Staff
+                                              for eligible Active 
+                                              subscriptions for a 
+                                              billing period      
+  ---------------------------------------------------------------------------------
+
+### Batch billing request
+
+``` json
+{
+  "billing_period": "2026-10"
+}
+```
+
+### Batch billing response
+
+``` json
+{
+  "data": {
+    "billing_period": "2026-10",
+    "created_count": 1,
+    "skipped_count": 0,
+    "invoices": [
+      {
+        "id": "inv_001",
+        "subscription_id": "sub_001",
+        "billing_period": "2026-10",
+        "status": "UNPAID",
+        "subtotal": "300.00",
+        "discount_amount": "0.00",
+        "tax_amount": "30.00",
+        "total": "330.00",
+        "amount_paid": "0.00",
+        "balance_due": "330.00",
+        "due_date": "2026-10-15"
+      }
+    ]
+  }
+}
+```
+
+The generator must be safe to run more than once. Enforce a unique
+`(subscription_id, billing_period)` pair in the database. A repeated run
+must not create duplicate invoices. Invoice creation and discount usage
+updates should be atomic.
+
+Suggested invoice list filters: `status`, `customer_id`,
+`subscription_id`, `billing_period`, `due_date_from`, `due_date_to`,
+`overdue`.
+
+## 6. Discount rules
+
+  ----------------------------------------------------------------------------------
+  Method            Endpoint                     Purpose           Access
+  ----------------- ---------------------------- ----------------- -----------------
+  `GET`             `/discount-rules`            List discount     Admin
+                                                 rules             
+
+  `POST`            `/discount-rules`            Create a          Admin
+                                                 percentage        
+                                                 discount rule     
+
+  `GET`             `/discount-rules/{ruleId}`   Get rule details  Admin
+
+  `PATCH`           `/discount-rules/{ruleId}`   Update rule       Admin
+                                                 configuration or  
+                                                 enabled state     
+  ----------------------------------------------------------------------------------
+
+### Create discount rule request
+
+``` json
+{
+  "name": "Three-seat discount",
+  "discount_type": "PERCENT",
+  "value": "10.00",
+  "minimum_quantity": 3,
+  "starts_on": "2026-10-01",
+  "ends_on": "2026-12-31",
+  "usage_limit": 100,
+  "enabled": true
+}
+```
+
+The discount engine applies eligible rules automatically during invoice
+generation. Eligibility depends on minimum quantity, date window,
+enabled state, and remaining usage. The invoice response should expose
+the applied rule and discount amount so the frontend can show the
+calculation.
+
+## 7. Payments
+
+  ----------------------------------------------------------------------------------------
+  Method            Endpoint                           Purpose           Access
+  ----------------- ---------------------------------- ----------------- -----------------
+  `GET`             `/invoices/{invoiceId}/payments`   List payments     Admin/Staff
+                                                       recorded against  
+                                                       an invoice        
+
+  `POST`            `/invoices/{invoiceId}/payments`   Record a payment  Admin/Staff
+                                                       against an        
+                                                       invoice           
+  ----------------------------------------------------------------------------------------
+
+### Record payment request
+
+``` json
+{
+  "amount": "100.00",
+  "payment_date": "2026-10-31",
+  "method": "CASH",
+  "reference": "receipt-001"
+}
+```
+
+### Payment response
+
+``` json
+{
+  "data": {
+    "id": "pay_001",
+    "invoice_id": "inv_001",
+    "amount": "100.00",
+    "payment_date": "2026-10-31",
+    "method": "CASH"
+  },
+  "meta": {
+    "invoice_status": "UNPAID",
+    "amount_paid": "100.00",
+    "balance_due": "230.00",
+    "overdue": true
+  }
+}
+```
+
+The invoice becomes `PAID` when its remaining balance reaches zero.
+Overdue is derived from the due date and outstanding balance; it need
+not be stored as a manually updated status. The exact payment methods
+are implementation-defined; `CASH` is an illustrative mock value.
+
+## 8. Finance dashboard
+
+  ----------------------------------------------------------------------------
+  Method            Endpoint               Purpose           Access
+  ----------------- ---------------------- ----------------- -----------------
+  `GET`             `/dashboard/finance`   Return four       Admin/Staff
+                                           finance summary   
+                                           cards for a date  
+                                           range             
+
+  ----------------------------------------------------------------------------
+
+Suggested query parameters: `from=2026-10-01&to=2026-10-31`.
+
+### Suggested response
+
+``` json
+{
+  "data": {
+    "from": "2026-10-01",
+    "to": "2026-10-31",
+    "cards": {
+      "total_invoiced": "125000.00",
+      "total_collected": "98000.00",
+      "outstanding": "27000.00",
+      "overdue": "8000.00"
+    }
+  }
+}
+```
+
+These four card labels and their aggregation definitions are a proposed
+frontend-friendly contract; the mission plan requires four summary cards
+and a date filter but does not define the exact metrics. Confirm the
+metric definitions with the team before implementation.
+
+## 9. Customer portal
+
+The portal is read-only and must return only the authenticated
+customer's own records. The backend must enforce ownership; hiding
+another customer's records in the frontend is not sufficient.
+
+  ------------------------------------------------------------------------------------------------
+  Method            Endpoint                                   Purpose           Access
+  ----------------- ------------------------------------------ ----------------- -----------------
+  `GET`             `/portal/subscriptions`                    List the current  Customer
+                                                               customer's        
+                                                               subscriptions     
+
+  `GET`             `/portal/subscriptions/{subscriptionId}`   View one of the   Owner only
+                                                               current           
+                                                               customer's        
+                                                               subscriptions     
+
+  `GET`             `/portal/invoices`                         List the current  Customer
+                                                               customer's        
+                                                               invoices          
+
+  `GET`             `/portal/invoices/{invoiceId}`             View one of the   Owner only
+                                                               current           
+                                                               customer's        
+                                                               invoices          
+  ------------------------------------------------------------------------------------------------
+
+Suggested portal invoice filters: `status`, `billing_period`.
+
+## 10. Frontend mock checklist
+
+The frontend can mock against these flows independently:
+
+1.  Sign up, including password-rule and duplicate-email errors.
+2.  Login and role-dependent navigation for Admin, Staff, and Customer.
+3.  Product/variant and monthly plan creation.
+4.  Subscription creation and Draft → Confirmed → Active → Closed
+    transitions.
+5.  Batch billing, invoice detail, tax breakdown, and a repeated run
+    that creates no duplicates.
+6.  Discount rule creation and automatic discount display on the next
+    eligible invoice.
+7.  Payment entry, updated balance, Paid state, and overdue indication.
+8.  Finance dashboard with four cards and date filtering.
+9.  Customer portal showing only the signed-in customer's subscriptions
+    and invoices.
+
+## 11. Open contract decisions
+
+The mission plan does not specify the following. The team should settle
+them before the API is considered final:
+
+-   Exact names and definitions of the four dashboard metrics.
+-   Whether Staff can create/edit products, plans, subscriptions,
+    invoices, or payments; this document proposes Admin/Staff access for
+    operational endpoints.
+-   Exact payment methods and payment reference requirements.
+-   Invoice due-date policy.
+-   Whether the Odoo `+560` variant adjustment is a one-time or
+    recurring amount and how it is represented.
+-   Whether multiple tax rates or compound taxes are supported; the demo
+    only requires tax on invoices.
+-   Exact pagination response metadata and maximum page size.
+-   Whether closing a subscription immediately prevents the current
+    period's invoice or only future invoices.
+-   The precise billing-period anchor and timezone policy.
+
+Until these are decided, use the examples above as frontend mock
+fixtures, not as evidence that those policies have already been
+finalized.
