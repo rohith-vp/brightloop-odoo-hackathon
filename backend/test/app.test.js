@@ -27,19 +27,29 @@ describe('config', () => {
     assert.throws(() => loadConfig({}), /DATABASE_URL is required/);
   });
 
+  test('requires JWT_SECRET of at least 16 characters', () => {
+    assert.throws(() => loadConfig({ DATABASE_URL: 'x' }), /JWT_SECRET is required/);
+    assert.throws(
+      () => loadConfig({ DATABASE_URL: 'x', JWT_SECRET: 'short' }),
+      /at least 16 characters/,
+    );
+  });
+
   test('applies defaults and splits CORS origins', () => {
     const config = loadConfig({
       DATABASE_URL: 'postgresql://u:p@db:5432/x',
+      JWT_SECRET: 'a-long-enough-test-secret',
       CORS_ORIGINS: 'http://a.test, http://b.test',
     });
     assert.equal(config.port, 8000);
     assert.equal(config.host, '0.0.0.0');
+    assert.equal(config.jwtExpiresMinutes, 60);
     assert.deepEqual(config.corsOrigins, ['http://a.test', 'http://b.test']);
   });
 
   test('rejects an invalid port', () => {
     assert.throws(
-      () => loadConfig({ DATABASE_URL: 'x', API_PORT: 'abc' }),
+      () => loadConfig({ DATABASE_URL: 'x', JWT_SECRET: 'a-long-enough-test-secret', API_PORT: 'abc' }),
       /API_PORT/,
     );
   });

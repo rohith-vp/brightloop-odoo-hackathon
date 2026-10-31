@@ -2,14 +2,8 @@ import { loadConfig } from './config.js';
 import { createDb } from './db.js';
 import { createApp } from './app.js';
 import { runMigrations } from './migrate.js';
+import { createAuthenticator } from './middleware/authenticate.js';
 
-const config = loadConfig();
-const db = createDb(config.databaseUrl);
-const app = createApp({
-  db,
-  corsOrigins: config.corsOrigins,
-  jwtSecret: config.jwtSecret,
-});
 async function main() {
   const config = loadConfig();
   const db = createDb(config.databaseUrl);
@@ -21,7 +15,14 @@ async function main() {
       : 'Database schema is up to date.',
   );
 
-  const app = createApp({ db, corsOrigins: config.corsOrigins });
+  const app = createApp({
+    db,
+    corsOrigins: config.corsOrigins,
+    authenticate: createAuthenticator({ db, jwtSecret: config.jwtSecret }),
+    jwtSecret: config.jwtSecret,
+    jwtExpiresMinutes: config.jwtExpiresMinutes,
+  });
+
   const server = app.listen(config.port, config.host, () => {
     console.log(`API listening on http://${config.host}:${config.port}/api (${config.env})`);
   });

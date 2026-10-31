@@ -42,7 +42,8 @@ services:
       # Inside the Compose network the database host is "db".
       DATABASE_URL: postgresql://${POSTGRES_USER:-brightloop}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-brightloop}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173}
-      JWT_SECRET: ${JWT_SECRET}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env (see .env.example)}
+      JWT_ACCESS_TOKEN_EXPIRE_MINUTES: ${JWT_ACCESS_TOKEN_EXPIRE_MINUTES:-60}
     ports:
       - "${API_PORT:-8000}:${API_PORT:-8000}"
     volumes:

@@ -9,9 +9,10 @@ const envSchema = z.object({
   DATABASE_URL: z
     .string({ error: 'DATABASE_URL is required' })
     .min(1, { error: 'DATABASE_URL is required' }),
-    JWT_SECRET: z
-  .string()
-  .min(16, { error: 'JWT_SECRET must be at least 16 characters' }),
+  JWT_SECRET: z
+    .string({ error: 'JWT_SECRET is required' })
+    .min(16, { error: 'JWT_SECRET must be at least 16 characters' }),
+  JWT_ACCESS_TOKEN_EXPIRE_MINUTES: z.coerce.number().int().min(1).max(10080).default(60),
   CORS_ORIGINS: z.string().default('http://localhost:5173'),
 });
 
@@ -30,6 +31,8 @@ export function loadConfig(env = process.env) {
     host: values.API_HOST,
     port: values.API_PORT,
     databaseUrl: values.DATABASE_URL,
+    jwtSecret: values.JWT_SECRET,
+    jwtExpiresMinutes: values.JWT_ACCESS_TOKEN_EXPIRE_MINUTES,
     corsOrigins: values.CORS_ORIGINS.split(',').map((origin) => origin.trim()).filter(Boolean),
   };
 }

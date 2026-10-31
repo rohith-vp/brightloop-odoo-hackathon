@@ -2,22 +2,27 @@ import express from 'express';
 import cors from 'cors';
 import { healthRouter } from './routes/health.js';
 import { authRouter } from './routes/auth.js';
-
-// Builds the Express app. The database is passed in so tests can supply a fake.
-export function createApp({ db, corsOrigins = [], jwtSecret })  {
+import { usersRouter } from './routes/users.js';
 import { productsRouter } from './routes/products.js';
 import { variantsRouter } from './routes/variants.js';
 import { plansRouter } from './routes/plans.js';
 import { ApiError, translateDbError } from './errors.js';
 
-// Default authentication: attaches no user. Protected routes then return 401.
-// Replace with the JWT middleware once auth is merged.
+// Default authentication: attaches no user, so protected routes return 401.
+// index.js passes the JWT authenticator in.
 export function noAuthentication(req, res, next) {
   next();
 }
 
-// Builds the Express app. The database and auth middleware are passed in, so tests can supply fakes.
-export function createApp({ db, corsOrigins = [], authenticate = noAuthentication }) {
+// Builds the Express app. The database, auth middleware, and JWT settings are passed in,
+// so tests can supply fakes.
+export function createApp({
+  db,
+  corsOrigins = [],
+  authenticate = noAuthentication,
+  jwtSecret,
+  jwtExpiresMinutes = 60,
+}) {
   const app = express();
   app.disable('x-powered-by');
 
@@ -26,7 +31,8 @@ export function createApp({ db, corsOrigins = [], authenticate = noAuthenticatio
   app.use(authenticate);
 
   app.use('/api', healthRouter({ db }));
-  app.use('/api', authRouter({ db, jwtSecret }));
+  app.use('/api', authRouter({ db, jwtSecret, jwtExpiresMinutes }));
+  app.use('/api/users', usersRouter({ db }));
   app.use('/api/products', productsRouter({ db }));
   app.use('/api/plans', plansRouter({ db }));
   app.use('/api', variantsRouter({ db }));
