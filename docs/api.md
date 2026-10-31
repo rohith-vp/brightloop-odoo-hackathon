@@ -169,22 +169,28 @@ sign-up.
   "data": {
     "id": "product_001",
     "name": "Workspace",
+    "type": "SERVICE",
+    "sale_price": "100.00",
+    "cost_price": "40.00",
+    "notes": null,
     "variants": [
       {
         "id": "variant_001",
-        "name": "Standard",
-        "price_per_seat": "100.00",
-        "currency": "INR"
+        "product_id": "product_001",
+        "attribute": "Brand",
+        "value": "Odoo",
+        "price_extra": "560.00"
       }
     ]
   }
 }
 ```
 
-The mission plan calls for one product and one variant, with the Odoo
-variant adding 560. The exact meaning and representation of that Odoo
-adjustment should be agreed with the backend; do not assume it is a tax
-or a recurring charge.
+**Decision:** a variant is an attribute value with a `price_extra`, which
+is added to the product's `sale_price` for every seat. The Odoo brand is
+therefore `attribute: "Brand"`, `value: "Odoo"`, `price_extra: "560.00"`,
+and the per-seat price becomes 660.00. The extra is recurring with the
+subscription, not a one-time charge or a tax.
 
 ### Plan creation example
 
@@ -194,11 +200,17 @@ or a recurring charge.
   "product_variant_id": "variant_001",
   "billing_interval": "MONTH",
   "minimum_quantity": 2,
-  "end_behavior": "AUTO_CLOSE"
+  "end_behavior": "AUTO_CLOSE",
+  "available_from": "2026-01-01",
+  "available_to": null
 }
 ```
 
-Supported demo end behaviors: `AUTO_CLOSE` and `MANUAL_CLOSE`.
+The response adds `product_id` and `unit_price`, which is computed from
+the product and variant (for example, `"660.00"`). Supported billing
+intervals are `DAY`, `WEEK`, `MONTH`, and `YEAR`. Supported end behaviors
+are `AUTO_CLOSE` and `MANUAL_CLOSE`. `minimum_quantity` defaults to 1, and
+`available_to` must be on or after `available_from`.
 
 ### Tax example
 
@@ -208,6 +220,33 @@ Supported demo end behaviors: `AUTO_CLOSE` and `MANUAL_CLOSE`.
   "rate_percent": "10.00"
 }
 ```
+
+### Update and delete
+
+The catalog also supports these endpoints. Writes require Admin or Staff.
+
+  --------------------------------------------------------------------------------
+  Method            Endpoint                           Purpose
+  ----------------- ---------------------------------- ---------------------------
+  `GET`             `/products/{productId}/variants`   List a product's variants
+
+  `PATCH`           `/products/{productId}`            Change given product fields
+
+  `DELETE`          `/products/{productId}`            Delete a product (204)
+
+  `PATCH`           `/variants/{variantId}`            Change given variant fields
+
+  `DELETE`          `/variants/{variantId}`            Delete a variant (204)
+
+  `PATCH`           `/plans/{planId}`                  Change given plan fields
+
+  `DELETE`          `/plans/{planId}`                  Delete a plan (204)
+  --------------------------------------------------------------------------------
+
+`PATCH` validates the full record after the change, so date ranges are
+checked against the stored values. An empty `PATCH` body returns 422.
+Deleting a variant or product that a plan uses returns 409 `CONFLICT`.
+`GET /plans` accepts `product_variant_id` to filter the list.
 
 ## 4. Subscriptions
 

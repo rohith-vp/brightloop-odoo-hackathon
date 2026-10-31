@@ -46,27 +46,47 @@ A 503 response means the API is running but cannot reach PostgreSQL.
 
 ### Running backend tests
 
+Unit tests need no database:
+
 ```bash
 docker compose run --rm api npm test
 ```
 
-Or locally, with Node 22+ and `cd backend && npm install`:
+Integration tests run the catalog endpoints against PostgreSQL. They truncate tables, so the database name must contain `test`. Create one in the `db` container, then pass its URL (use the password from your `.env`):
 
 ```bash
-cd backend && npm test
+docker compose exec db createdb -U brightloop brightloop_test
+docker compose run --rm -e TEST_DATABASE_URL=postgresql://brightloop:<password>@db:5432/brightloop_test api npm test
 ```
+
+Without `TEST_DATABASE_URL`, the integration tests are skipped.
+
+Or locally, with Node 22+ and `cd backend && npm install`, run `npm test` in `backend/`.
 
 ### Backend layout
 
 ```
 backend/
+├── migrations/         # SQL files, applied in filename order on startup
 ├── src/
-│   ├── index.js        # Startup and graceful shutdown
+│   ├── index.js        # Startup, migrations, and graceful shutdown
 │   ├── app.js          # Express app: middleware, routes, error handling
 │   ├── config.js       # Environment variable validation (Zod)
 │   ├── db.js           # PostgreSQL connection pool
+│   ├── migrate.js      # Applies pending migrations, once each
+│   ├── auth.js         # Role checks: requireAuth, requireRole
+│   ├── errors.js       # ApiError and PostgreSQL error mapping
+│   ├── validation.js   # Zod helpers and pagination
+│   ├── schemas/        # Request validation (products, variants, plans)
+│   ├── repositories/   # Shared SQL queries
 │   └── routes/         # One file per resource
 └── test/
+    ├── unit/           # No database
+    └── integration/    # Needs TEST_DATABASE_URL
 ```
 
 New routes go in `src/routes/`, and are mounted in `src/app.js`.
+
+### Catalog endpoints
+
+Products, variants, and plans are implemented in `src/routes/`. Reads need a signed-in user. Writes need the Admin or Staff role. Signed-in auth is not merged yet, so these endpoints return 401 until it is. See `docs/api.md`.
