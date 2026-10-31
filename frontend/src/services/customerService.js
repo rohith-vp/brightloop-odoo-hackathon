@@ -128,6 +128,13 @@ class CustomerService {
     return customers.find((c) => c.id === id) || null;
   }
 
+  getCustomerByEmail(email) {
+    if (!email) return null;
+    const clean = email.trim().toLowerCase();
+    const customers = this.getCustomers();
+    return customers.find((c) => c.email && c.email.toLowerCase() === clean) || null;
+  }
+
   createCustomer(customerData) {
     const customers = this.getCustomers();
     const newCustomer = {

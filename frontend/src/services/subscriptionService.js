@@ -704,6 +704,142 @@ class SubscriptionService {
     });
   }
 
+  /* ----------------- CUSTOMER PORTAL DATA & REQUESTS ----------------- */
+
+  getSubscriptionsForCustomer(customerId) {
+    if (!customerId) return [];
+    const list = this.getSubscriptions();
+    return list.filter((s) => s.customerId === customerId || s.customer?.id === customerId);
+  }
+
+  getSubscriptionForCustomer(id, customerId) {
+    if (!customerId) throw new Error('Customer ID is required.');
+    const sub = this.getSubscriptionById(id);
+    if (!sub) return null;
+    if (sub.customerId !== customerId && sub.customer?.id !== customerId) {
+      throw new Error('Access denied: You do not have permission to view this subscription.');
+    }
+    return sub;
+  }
+
+  requestPause(id, customerId, reason = 'Customer requested temporary hold') {
+    const sub = this.getSubscriptionForCustomer(id, customerId);
+    if (!sub) throw new Error('Subscription not found.');
+    if (sub.status !== 'Active') {
+      throw new Error(`Cannot request pause: Subscription is currently ${sub.status}.`);
+    }
+
+    const event = {
+      id: `act_${Date.now()}`,
+      event: 'Request',
+      title: 'Pause Requested',
+      description: `Customer submitted hold request: "${reason}" (Pending Admin Approval).`,
+      timestamp: new Date().toISOString(),
+      user: sub.customer?.contactPerson || 'Customer',
+    };
+
+    return this.updateSubscription(id, {
+      pendingRequest: {
+        type: 'Pause',
+        reason,
+        requestedAt: new Date().toISOString(),
+        status: 'Pending Approval',
+      },
+      activityHistory: [event, ...(sub.activityHistory || [])],
+    });
+  }
+
+  requestResume(id, customerId, reason = 'Customer requested service resumption') {
+    const sub = this.getSubscriptionForCustomer(id, customerId);
+    if (!sub) throw new Error('Subscription not found.');
+    if (sub.status !== 'Paused') {
+      throw new Error(`Cannot request resume: Subscription is currently ${sub.status}.`);
+    }
+
+    const event = {
+      id: `act_${Date.now()}`,
+      event: 'Request',
+      title: 'Resume Requested',
+      description: `Customer submitted reactivation request: "${reason}" (Pending Admin Approval).`,
+      timestamp: new Date().toISOString(),
+      user: sub.customer?.contactPerson || 'Customer',
+    };
+
+    return this.updateSubscription(id, {
+      pendingRequest: {
+        type: 'Resume',
+        reason,
+        requestedAt: new Date().toISOString(),
+        status: 'Pending Approval',
+      },
+      activityHistory: [event, ...(sub.activityHistory || [])],
+    });
+  }
+
+  requestCancellation(id, customerId, reason = 'Customer requested termination') {
+    const sub = this.getSubscriptionForCustomer(id, customerId);
+    if (!sub) throw new Error('Subscription not found.');
+    if (sub.status === 'Closed') {
+      throw new Error('Subscription is already closed.');
+    }
+
+    const event = {
+      id: `act_${Date.now()}`,
+      event: 'Request',
+      title: 'Cancellation Requested',
+      description: `Customer submitted early cancellation request: "${reason}" (Pending Admin Approval).`,
+      timestamp: new Date().toISOString(),
+      user: sub.customer?.contactPerson || 'Customer',
+    };
+
+    return this.updateSubscription(id, {
+      pendingRequest: {
+        type: 'Cancellation',
+        reason,
+        requestedAt: new Date().toISOString(),
+        status: 'Pending Approval',
+      },
+      activityHistory: [event, ...(sub.activityHistory || [])],
+    });
+  }
+
+  cancelPendingRequest(id, customerId) {
+    const sub = this.getSubscriptionForCustomer(id, customerId);
+    if (!sub) throw new Error('Subscription not found.');
+
+    const event = {
+      id: `act_${Date.now()}`,
+      event: 'Request',
+      title: 'Request Withdrawn',
+      description: 'Customer withdrew the pending lifecycle request.',
+      timestamp: new Date().toISOString(),
+      user: sub.customer?.contactPerson || 'Customer',
+    };
+
+    return this.updateSubscription(id, {
+      pendingRequest: null,
+      activityHistory: [event, ...(sub.activityHistory || [])],
+    });
+  }
+
+  approvePendingRequest(id, reviewer = 'Admin') {
+    const sub = this.getSubscriptionById(id);
+    if (!sub || !sub.pendingRequest) throw new Error('No pending request found.');
+
+    const req = sub.pendingRequest;
+    if (req.type === 'Pause') {
+      this.pauseSubscription(id, `Approved by ${reviewer}: ${req.reason}`);
+    } else if (req.type === 'Resume') {
+      this.resumeSubscription(id);
+    } else if (req.type === 'Cancellation') {
+      this.closeSubscription(id, true, `Approved by ${reviewer}: ${req.reason}`);
+    }
+
+    return this.updateSubscription(id, {
+      pendingRequest: null,
+    });
+  }
+
   saveSubscriptions(list) {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(list));

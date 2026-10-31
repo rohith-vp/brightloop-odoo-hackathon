@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import PasswordInput from '../components/PasswordInput';
-import { Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Loader2, AlertCircle, CheckCircle2, Shield, User } from 'lucide-react';
+import { authService } from '../services/authService.js';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -52,24 +53,42 @@ export default function LoginPage() {
 
     setIsLoading(true);
 
-    // Simulated authenticating state
     setTimeout(() => {
-      setIsLoading(false);
-      setLoginSuccess(true);
+      try {
+        const result = authService.login(formData.email, formData.password);
+        setIsLoading(false);
+        setLoginSuccess(true);
 
-      // Redirect to dashboard
-      setTimeout(() => {
-        navigate('/');
-      }, 500);
-    }, 750);
+        setTimeout(() => {
+          navigate(result.redirectUrl);
+        }, 400);
+      } catch (err) {
+        setIsLoading(false);
+        setErrors({ general: err.message || 'Invalid email or password.' });
+      }
+    }, 500);
   };
 
-  const handleFillDemo = () => {
-    setFormData({
-      email: 'admin@brightloop.io',
-      password: 'Password@123',
-      rememberMe: true,
-    });
+  const handleFillDemo = (type = 'admin') => {
+    if (type === 'admin') {
+      setFormData({
+        email: 'admin@brightloop.io',
+        password: 'Password@123',
+        rememberMe: true,
+      });
+    } else if (type === 'customer1') {
+      setFormData({
+        email: 'ananya@techcorp.io',
+        password: 'Password@123',
+        rememberMe: true,
+      });
+    } else if (type === 'customer2') {
+      setFormData({
+        email: 'vikram.roy@nexusfin.com',
+        password: 'Password@123',
+        rememberMe: true,
+      });
+    }
     setErrors({});
   };
 
@@ -289,23 +308,44 @@ export default function LoginPage() {
         <div
           style={{
             display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginTop: '2px',
+            flexDirection: 'column',
+            gap: 'var(--space-2)',
+            marginTop: 'var(--space-3)',
+            padding: 'var(--space-3)',
+            borderRadius: 'var(--radius-md)',
+            backgroundColor: 'var(--color-surface-green)',
+            border: '1px solid rgba(8, 122, 75, 0.15)',
           }}
         >
-          <button
-            type="button"
-            onClick={handleFillDemo}
-            style={{
-              fontSize: 'var(--font-size-helper)',
-              color: 'var(--color-text-secondary)',
-              textDecoration: 'underline',
-              padding: '2px 6px',
-            }}
-          >
-            Auto-fill demo credentials
-          </button>
+          <span style={{ fontSize: '12px', fontWeight: 'var(--font-weight-medium)', color: 'var(--color-primary)' }}>
+            Quick Demo Login:
+          </span>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+            <button
+              type="button"
+              onClick={() => handleFillDemo('admin')}
+              className="btn btn-secondary"
+              style={{ fontSize: '11px', padding: '3px 8px' }}
+            >
+              Admin (admin@brightloop.io)
+            </button>
+            <button
+              type="button"
+              onClick={() => handleFillDemo('customer1')}
+              className="btn btn-secondary"
+              style={{ fontSize: '11px', padding: '3px 8px' }}
+            >
+              Customer: TechCorp
+            </button>
+            <button
+              type="button"
+              onClick={() => handleFillDemo('customer2')}
+              className="btn btn-secondary"
+              style={{ fontSize: '11px', padding: '3px 8px' }}
+            >
+              Customer: Nexus FinTech
+            </button>
+          </div>
         </div>
       </form>
 

@@ -10,6 +10,12 @@ import QuotationsPage from './pages/QuotationsPage';
 import InvoicesPage from './pages/InvoicesPage';
 import PaymentsPage from './pages/PaymentsPage';
 import DiscountsPage from './pages/DiscountsPage';
+import CustomerLayout from './layouts/CustomerLayout';
+import CustomerDashboardPage from './pages/portal/CustomerDashboardPage';
+import CustomerSubscriptionsPage from './pages/portal/CustomerSubscriptionsPage';
+import CustomerInvoicesPage from './pages/portal/CustomerInvoicesPage';
+import CustomerPaymentsPage from './pages/portal/CustomerPaymentsPage';
+import CustomerProfilePage from './pages/portal/CustomerProfilePage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
@@ -73,6 +79,15 @@ export default function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        </Route>
+
+        {/* Customer Portal Shell */}
+        <Route path="/portal" element={<CustomerLayout />}>
+          <Route index element={<CustomerDashboardPage />} />
+          <Route path="subscriptions" element={<CustomerSubscriptionsPage />} />
+          <Route path="invoices" element={<CustomerInvoicesPage />} />
+          <Route path="payments" element={<CustomerPaymentsPage />} />
+          <Route path="profile" element={<CustomerProfilePage />} />
         </Route>
 
         {/* Protected Dashboard & Management Shell */}

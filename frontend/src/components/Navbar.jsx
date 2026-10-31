@@ -1,5 +1,5 @@
 import React from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Menu,
   Search,
@@ -7,7 +7,10 @@ import {
   MessageSquare,
   HelpCircle,
   ChevronDown,
+  ExternalLink,
+  LogOut,
 } from 'lucide-react';
+import { authService } from '../services/authService.js';
 
 const routeTitleMap = {
   '/': 'Overview',
@@ -25,7 +28,9 @@ const routeTitleMap = {
 
 export default function Navbar({ onToggleSidebar }) {
   const location = useLocation();
+  const navigate = useNavigate();
   const currentTitle = routeTitleMap[location.pathname] || 'Dashboard';
+  const currentUser = authService.getCurrentUser() || { name: 'Admin', avatar: 'RV' };
 
   return (
     <header className="layout-navbar">
@@ -137,19 +142,27 @@ export default function Navbar({ onToggleSidebar }) {
           }}
         />
 
-        {/* User Profile Pill / Dropdown */}
+        {/* Customer Portal Quick Link for Evaluators */}
         <button
           type="button"
+          onClick={() => navigate('/portal')}
+          className="btn btn-secondary"
+          title="Open Customer Portal View"
           style={{
-            display: 'flex',
+            fontSize: '12px',
+            padding: '4px 10px',
+            display: 'inline-flex',
             alignItems: 'center',
-            gap: '8px',
-            padding: '4px 8px',
-            borderRadius: 'var(--radius-sm)',
-            transition: 'background-color 0.15s ease',
+            gap: '4px',
+            color: 'var(--color-primary)',
           }}
-          className="user-profile-trigger"
         >
+          <span>Customer Portal</span>
+          <ExternalLink size={13} />
+        </button>
+
+        {/* User Profile Pill */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <div
             style={{
               width: '32px',
@@ -164,21 +177,21 @@ export default function Navbar({ onToggleSidebar }) {
               justifyContent: 'center',
             }}
           >
-            RV
+            {currentUser.avatar || 'RV'}
           </div>
-          <span
-            style={{
-              fontSize: 'var(--font-size-navbar)',
-              fontWeight: 'var(--font-weight-medium)',
-              color: 'var(--color-text-main)',
-              display: 'none',
+          <button
+            type="button"
+            onClick={() => {
+              authService.logout();
+              navigate('/login');
             }}
-            className="navbar-username"
+            className="btn-icon"
+            title="Sign out of admin console"
+            style={{ color: 'var(--color-text-secondary)', padding: '6px' }}
           >
-            Rohith V P
-          </span>
-          <ChevronDown size={15} style={{ color: 'var(--color-text-secondary)' }} />
-        </button>
+            <LogOut size={16} />
+          </button>
+        </div>
       </div>
     </header>
   );

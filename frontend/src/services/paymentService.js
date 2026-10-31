@@ -93,8 +93,19 @@ class PaymentService {
   }
 
   getPaymentsByCustomer(customerId) {
+    if (!customerId) return [];
     const list = this.getPayments();
     return list.filter((p) => p.customerId === customerId);
+  }
+
+  getPaymentForCustomer(id, customerId) {
+    if (!customerId) throw new Error('Customer ID is required.');
+    const pay = this.getPaymentById(id);
+    if (!pay) return null;
+    if (pay.customerId !== customerId) {
+      throw new Error('Access denied: You do not have permission to view this payment.');
+    }
+    return pay;
   }
 
   validatePayment(data) {

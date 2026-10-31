@@ -264,8 +264,19 @@ class InvoiceService {
   }
 
   getInvoicesByCustomer(customerId) {
+    if (!customerId) return [];
     const list = this.getInvoices();
-    return list.filter((i) => i.customerId === customerId);
+    return list.filter((i) => i.customerId === customerId || i.customer?.id === customerId);
+  }
+
+  getInvoiceForCustomer(id, customerId) {
+    if (!customerId) throw new Error('Customer ID is required.');
+    const inv = this.getInvoiceById(id);
+    if (!inv) return null;
+    if (inv.customerId !== customerId && inv.customer?.id !== customerId) {
+      throw new Error('Access denied: You do not have permission to view this invoice.');
+    }
+    return inv;
   }
 
   createInvoice(data) {
