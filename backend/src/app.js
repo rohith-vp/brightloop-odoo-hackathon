@@ -1,6 +1,10 @@
 import express from 'express';
 import cors from 'cors';
 import { healthRouter } from './routes/health.js';
+import { authRouter } from './routes/auth.js';
+
+// Builds the Express app. The database is passed in so tests can supply a fake.
+export function createApp({ db, corsOrigins = [], jwtSecret })  {
 import { productsRouter } from './routes/products.js';
 import { variantsRouter } from './routes/variants.js';
 import { plansRouter } from './routes/plans.js';
@@ -22,6 +26,7 @@ export function createApp({ db, corsOrigins = [], authenticate = noAuthenticatio
   app.use(authenticate);
 
   app.use('/api', healthRouter({ db }));
+  app.use('/api', authRouter({ db, jwtSecret }));
   app.use('/api/products', productsRouter({ db }));
   app.use('/api/plans', plansRouter({ db }));
   app.use('/api', variantsRouter({ db }));

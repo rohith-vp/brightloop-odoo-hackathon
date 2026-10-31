@@ -9,6 +9,9 @@ const envSchema = z.object({
   DATABASE_URL: z
     .string({ error: 'DATABASE_URL is required' })
     .min(1, { error: 'DATABASE_URL is required' }),
+    JWT_SECRET: z
+  .string()
+  .min(16, { error: 'JWT_SECRET must be at least 16 characters' }),
   CORS_ORIGINS: z.string().default('http://localhost:5173'),
 });
 

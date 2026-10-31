@@ -3,6 +3,13 @@ import { createDb } from './db.js';
 import { createApp } from './app.js';
 import { runMigrations } from './migrate.js';
 
+const config = loadConfig();
+const db = createDb(config.databaseUrl);
+const app = createApp({
+  db,
+  corsOrigins: config.corsOrigins,
+  jwtSecret: config.jwtSecret,
+});
 async function main() {
   const config = loadConfig();
   const db = createDb(config.databaseUrl);
